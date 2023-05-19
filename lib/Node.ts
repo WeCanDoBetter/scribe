@@ -447,9 +447,8 @@ export default class Node<Ctx, Meta extends Metadata>
         );
 
         if (rejected.length) {
-          const errors = rejected.map((result) => result.reason);
           throw new AggregateError(
-            errors,
+            rejected.map((result) => result.reason),
             "Failed to run node for context(s)",
           );
         }

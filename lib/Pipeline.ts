@@ -18,7 +18,10 @@
 
 import type { Metadata, Next, Tail, Workflow } from "../types.ts";
 import { noopAsync, runWorkflow } from "../util.ts";
-import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
+import SharedComponent, {
+  SharedErrorEvent,
+  SharedOptions,
+} from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
   push: Workflow<{ push: boolean; pushed: boolean; workflow: Workflow<Ctx> }>;
@@ -104,9 +107,8 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata>
     ) as PromiseRejectedResult[];
 
     if (rejected.length) {
-      const errors = rejected.map((result) => result.reason);
       const aggegrateError = new AggregateError(
-        errors,
+        rejected.map((result) => result.reason),
         rejected.length === results.length
           ? "All pushes failed"
           : "Some pushes failed",
@@ -150,6 +152,7 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata>
       });
     } catch (err) {
       const aggegrateError = new AggregateError([err], "Pipeline failed");
+      this.dispatchEvent(new SharedErrorEvent(aggegrateError));
       throw aggegrateError;
     }
   }
