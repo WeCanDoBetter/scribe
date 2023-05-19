@@ -1,0 +1,13 @@
+{
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any"]
+    }
+  },
+  "test": {
+    "include": [
+      "tests/graph.ts",
+      "tests/pipeline.ts"
+    ]
+  }
+}
