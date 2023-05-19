@@ -462,5 +462,6 @@ export default class Node<Ctx, Meta extends Metadata>
         );
       }
     }
+    this.#looping = false;
   }
 }
