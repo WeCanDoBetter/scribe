@@ -13,6 +13,8 @@ and execute complex computational workflows. With the ability to share and
 manipulate state data across different tasks, Scribe is the perfect tool to
 design workflows for AI development, data processing, and much more.
 
+![Scribe](./.github/img/scribe-text.png)
+
 Scribe is not just a tool, but a digital artisan's companion, enabling a
 streamlined process to model and manage complex computations. It simplifies the
 task of developing and executing sophisticated computational processes by
@@ -33,6 +35,10 @@ management with Scribe! 🥳
   task for advanced operations.
 - **🛠️ Extensibility**: Add your workflows to core pipelines, customizing
   Scribe's behavior to meet your needs.
+- **🔒 Built with TypeScript**: Scribe is developed using TypeScript, providing
+  better type safety, autocompletion, and an overall improved development experience.
+- **💪 No native dependencies**: Scribe is a standalone library without native dependencies,
+  making it easy to integrate into your project and simplifying deployment.
 
 <!-- - **📊 Performance Measurements**: Track the performance of your pipelines and
   tasks for optimization. -->
@@ -40,16 +46,16 @@ management with Scribe! 🥳
 ## 🚀 Getting Started
 
 To start using Scribe in your projects, follow the simple steps outlined in our
-[Getting Started Guide](http). It will walk you through the installation
+[Getting Started Guide](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction). It will walk you through the installation
 process, showcase basic usage examples, and provide helpful tips to maximize the
 potential of Scribe.
 
 ## 💡 Learn More
 
 Explore the extensive documentation and code examples in our
-[documentation](/docs) to dive deeper into the capabilities of Scribe, or use
+[documentation](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction) to dive deeper into the capabilities of Scribe, or use
 our fully interactive book
-[Mastering Scribe: Context Workflows](/docs/mastering-scribe). Gain insights
+[Mastering Scribe: Context Workflows](https://WeCanDoBetter.gihub.io/scribe). Gain insights
 into advanced features, best practices, and use cases that can transform your
 applications.
 
@@ -96,11 +102,11 @@ information in the [contact section](CONTACT.md).
 ## 🔗 Links
 
 - [Project Page](https://www.wcdb.life/scribe)
-- [Documentation](docs)
-  - [Getting Started](g)
+- [Documentation](https://WeCanDoBetter.gihub.io/scribe)
+  - [Getting Started](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction)
   - [Mastering Scribe: Context Workflows](/docs/mastering-scribe) (interactive
     book)
-- [Blog](https://www.wcdb.life/scribe/blog)
+- [Blog](https://www.wcdb.life/blog)
 
 ## 📰 Posts
 
