@@ -46,4 +46,4 @@ jobs:
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v1
         with:
-          file: cov.lcov
+          path-to-lcov: cov.lcov
