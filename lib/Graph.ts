@@ -26,8 +26,7 @@ interface Ops<Ctx> extends Record<string, Workflow<any>> {
   runFor: Workflow<{ ctx: Ctx }>;
 }
 
-export interface GraphOptions<Ctx, Meta extends Metadata>
-  extends SharedOptions<Ops<Ctx>, Meta> {
+export interface GraphOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx>, Meta> {
   readonly nodes?: Node<Ctx, Metadata>[];
   readonly edges?: Edge<Ctx, Metadata>[];
 }
@@ -38,8 +37,7 @@ export interface GraphOptions<Ctx, Meta extends Metadata>
  * @template Ctx The context type.
  * @template Meta The metadata type.
  */
-export default class Graph<Ctx, Meta extends Metadata = Metadata>
-  extends SharedComponent<Ops<Ctx>, Meta> {
+export default class Graph<Ctx, Meta extends Metadata = Metadata> extends SharedComponent<Ops<Ctx>, Meta> {
   /** The nodes that are in this graph. */
   #nodes: Set<Node<Ctx, Metadata>>;
   /** The edges that are in this graph. */
@@ -106,12 +104,10 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata>
           throw aggegrateError;
         }
       } catch (err) {
-        const aggegrateError = err instanceof AggregateError
-          ? err
-          : new AggregateError(
-            [err],
-            "Failed to run graph",
-          );
+        const aggegrateError = err instanceof AggregateError ? err : new AggregateError(
+          [err],
+          "Failed to run graph",
+        );
         throw aggegrateError;
       }
     });

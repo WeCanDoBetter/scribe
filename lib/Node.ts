@@ -20,14 +20,9 @@ import { Graph } from "../mod.ts";
 import type { Metadata, Workflow } from "../types.ts";
 import { noopAsync } from "../util.ts";
 import Edge from "./Edge.ts";
-import SharedComponent, {
-  SharedErrorEvent,
-  SharedEvent,
-  SharedOptions,
-} from "./SharedComponent.ts";
+import SharedComponent, { SharedErrorEvent, SharedEvent, SharedOptions } from "./SharedComponent.ts";
 
-interface Ops<Ctx, Meta extends Metadata>
-  extends Record<string, Workflow<any>> {
+interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{
     source: Node<Ctx, Metadata>;
     target: Node<Ctx, Metadata>;
@@ -46,8 +41,7 @@ interface Ops<Ctx, Meta extends Metadata>
   destroy: Workflow<{ api: NodeAPI<Ctx, Meta> }>;
 }
 
-export interface NodeOptions<Ctx, Meta extends Metadata>
-  extends SharedOptions<Ops<Ctx, Meta>, Meta> {
+export interface NodeOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx, Meta>, Meta> {
   /** The edges that are connected to this node. */
   readonly edges?: Edge<Ctx, Metadata>[];
   /** The maximum number of contexts that can be active for this node. */
@@ -74,8 +68,7 @@ export class NodeAPI<Ctx, Meta extends Metadata> {
   }
 }
 
-export class NodeInitializedEvent<Ctx, Meta extends Metadata = Metadata>
-  extends SharedEvent {
+export class NodeInitializedEvent<Ctx, Meta extends Metadata = Metadata> extends SharedEvent {
   readonly node: Node<Ctx, Meta>;
 
   constructor(node: Node<Ctx, Meta>) {
@@ -84,8 +77,7 @@ export class NodeInitializedEvent<Ctx, Meta extends Metadata = Metadata>
   }
 }
 
-export class NodeInitializationErrorEvent<Ctx, Meta extends Metadata = Metadata>
-  extends SharedEvent {
+export class NodeInitializationErrorEvent<Ctx, Meta extends Metadata = Metadata> extends SharedEvent {
   readonly node: Node<Ctx, Meta>;
   readonly error: AggregateError;
 
@@ -96,8 +88,7 @@ export class NodeInitializationErrorEvent<Ctx, Meta extends Metadata = Metadata>
   }
 }
 
-export default class Node<Ctx, Meta extends Metadata>
-  extends SharedComponent<Ops<Ctx, Meta>, Meta> {
+export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Ops<Ctx, Meta>, Meta> {
   /** The API for this node. */
   readonly api: NodeAPI<Ctx, Meta> = new NodeAPI(this);
 
@@ -293,11 +284,7 @@ export default class Node<Ctx, Meta extends Metadata>
       const opsCtx = {
         type,
         ctx,
-        edges: this.getEdges((edge) =>
-          type === EdgeType.Incoming
-            ? edge.target === this
-            : edge.source === this
-        ),
+        edges: this.getEdges((edge) => type === EdgeType.Incoming ? edge.target === this : edge.source === this),
         write: true,
         written: false,
         runStrategy: "full", // full means wait for edges to send the same context
@@ -336,14 +323,11 @@ export default class Node<Ctx, Meta extends Metadata>
 
         // Write to the edges in parallel.
         const results = await Promise.allSettled(
-          opsCtx.edges.map((edge) =>
-            edge.source === this ? edge.write(ctx) : read()
-          ),
+          opsCtx.edges.map((edge) => edge.source === this ? edge.write(ctx) : read()),
         );
 
         const rejected = results.filter(
-          (result): result is PromiseRejectedResult =>
-            result.status === "rejected",
+          (result): result is PromiseRejectedResult => result.status === "rejected",
         );
 
         if (rejected.length) {
@@ -442,8 +426,7 @@ export default class Node<Ctx, Meta extends Metadata>
         );
 
         const rejected = results.filter(
-          (result): result is PromiseRejectedResult =>
-            result.status === "rejected",
+          (result): result is PromiseRejectedResult => result.status === "rejected",
         );
 
         if (rejected.length) {
@@ -455,9 +438,7 @@ export default class Node<Ctx, Meta extends Metadata>
       } catch (err) {
         this.dispatchEvent(
           new SharedErrorEvent(
-            err instanceof AggregateError
-              ? err
-              : new AggregateError([err], "Failed to run node for context(s)"),
+            err instanceof AggregateError ? err : new AggregateError([err], "Failed to run node for context(s)"),
           ),
         );
       }

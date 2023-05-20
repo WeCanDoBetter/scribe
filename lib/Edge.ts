@@ -33,8 +33,7 @@ interface Ops<Ctx> extends Record<string, Workflow<any>> {
  * @template Ctx The context type.
  * @template Meta The metadata type.
  */
-export default class Edge<Ctx, Meta extends Metadata>
-  extends SharedComponent<Ops<Ctx>, Meta> {
+export default class Edge<Ctx, Meta extends Metadata> extends SharedComponent<Ops<Ctx>, Meta> {
   readonly source: Node<Ctx, Metadata>;
   readonly target: Node<Ctx, Metadata>;
 

@@ -152,22 +152,19 @@ export default class SharedComponent<
     if (listeners) {
       Promise.allSettled(
         listeners.map((listener) => listener(event)),
-      ).then((results) =>
-        results.filter((result): result is PromiseRejectedResult =>
-          result.status === "rejected"
-        )
-      ).then((rejected) => {
-        if (rejected.length) {
-          this.dispatchEvent(
-            new SharedErrorEvent(
-              new AggregateError(
-                rejected.map((result) => result.reason),
-                "One or more listeners failed",
+      ).then((results) => results.filter((result): result is PromiseRejectedResult => result.status === "rejected"))
+        .then((rejected) => {
+          if (rejected.length) {
+            this.dispatchEvent(
+              new SharedErrorEvent(
+                new AggregateError(
+                  rejected.map((result) => result.reason),
+                  "One or more listeners failed",
+                ),
               ),
-            ),
-          );
-        }
-      });
+            );
+          }
+        });
     }
   }
 

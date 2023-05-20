@@ -18,18 +18,14 @@
 
 import type { Metadata, Next, Tail, Workflow } from "../types.ts";
 import { noopAsync, runWorkflow } from "../util.ts";
-import SharedComponent, {
-  SharedErrorEvent,
-  SharedOptions,
-} from "./SharedComponent.ts";
+import SharedComponent, { SharedErrorEvent, SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
   push: Workflow<{ push: boolean; pushed: boolean; workflow: Workflow<Ctx> }>;
   runFor: Workflow<{ run: boolean; ran: boolean; ctx: Ctx }>;
 }
 
-export interface PipelineOptions<Ctx, Meta extends Metadata>
-  extends SharedOptions<Ops<Ctx>, Meta> {
+export interface PipelineOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx>, Meta> {
   /** The workflows of this pipeline. */
   readonly workflows?: Workflow<Ctx>[];
 }
@@ -43,8 +39,7 @@ type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * optional.
  * @template Ctx The context type.
  */
-export default class Pipeline<Ctx, Meta extends Metadata = Metadata>
-  extends SharedComponent<Ops<Ctx>, Meta> {
+export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends SharedComponent<Ops<Ctx>, Meta> {
   /**
    * Creates a new pipeline.
    * @param options The options of the pipeline.
@@ -102,16 +97,12 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata>
       });
     }));
 
-    const rejected = results.filter((result) =>
-      result.status === "rejected"
-    ) as PromiseRejectedResult[];
+    const rejected = results.filter((result) => result.status === "rejected") as PromiseRejectedResult[];
 
     if (rejected.length) {
       const aggegrateError = new AggregateError(
         rejected.map((result) => result.reason),
-        rejected.length === results.length
-          ? "All pushes failed"
-          : "Some pushes failed",
+        rejected.length === results.length ? "All pushes failed" : "Some pushes failed",
       );
       throw aggegrateError;
     }

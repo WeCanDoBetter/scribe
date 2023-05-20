@@ -1,6 +1,7 @@
 # **📜 Scribe: Context-Aware Workflow Orchestration**
 
 ![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
+[![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
 
 > **IMPORTANT**: Please be aware that the Scribe project is currently in its
 > **alpha phase**. This means that the project is still in its early stages of
