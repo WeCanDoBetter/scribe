@@ -23,6 +23,8 @@ leveraging a shared and manipulable state data paradigm.
 Join us on this exciting journey and become a part of the future of workflow
 management with Scribe! 🥳
 
+[Documentation](https://scribe.wcdb.life)
+
 ## 🎉 Features
 
 - **🚀 Powerful Pipelines**: Design linear workflows with multiple tasks sharing
@@ -46,16 +48,16 @@ management with Scribe! 🥳
 ## 🚀 Getting Started
 
 To start using Scribe in your projects, follow the simple steps outlined in our
-[Getting Started Guide](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction). It will walk you through the installation
+[Getting Started Guide](https://scribe.wcdb.life/getting-started/introduction). It will walk you through the installation
 process, showcase basic usage examples, and provide helpful tips to maximize the
 potential of Scribe.
 
 ## 💡 Learn More
 
 Explore the extensive documentation and code examples in our
-[documentation](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction) to dive deeper into the capabilities of Scribe, or use
+[documentation](https://scribe.wcdb.life) to dive deeper into the capabilities of Scribe, or use
 our fully interactive book
-[Mastering Scribe: Context Workflows](https://WeCanDoBetter.gihub.io/scribe). Gain insights
+[Mastering Scribe: Context Workflows](https://scribe.wcdb.life). Gain insights
 into advanced features, best practices, and use cases that can transform your
 applications.
 
