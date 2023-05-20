@@ -9,5 +9,18 @@
       "tests/graph.ts",
       "tests/pipeline.ts"
     ]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 120,
+    "indentWidth": 2,
+    "singleQuote": false,
+    "proseWrap": "preserve",
+    "exclude": [
+      "docs/",
+      "tests/",
+      "deno.json",
+      "deno.lock"
+    ]
   }
 }
