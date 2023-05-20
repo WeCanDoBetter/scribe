@@ -21,7 +21,7 @@ import { runWorkflow } from "https://deno.land/x/scribeai/util.ts";
 
 Next, we create a new instance of a Pipeline. We specify an object that can contain options
 for the pipeline. In this case, we define `ops`, which stands for
-[operations](/docs/core-concepts/workflows#operations), where each operation is a workflow itself.
+[operations](/core-concepts/workflows#operations), where each operation is a workflow itself.
 Here, two dummy tasks are set up for `push` and `runFor`.
 
 ```ts
