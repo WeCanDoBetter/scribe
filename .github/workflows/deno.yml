@@ -41,7 +41,7 @@ jobs:
         run: deno test --allow-all --coverage=cov/
 
       - name: Generate Coverage
-      - run: deno coverage --lcov cov/ > cov.lcov
+        run: deno coverage --lcov cov/ > cov.lcov
       
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v1
