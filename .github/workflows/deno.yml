@@ -42,3 +42,8 @@ jobs:
 
       - name: Generate Coverage
       - run: deno coverage --lcov cov/ > cov.lcov
+      
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v1
+        with:
+          file: cov.lcov
