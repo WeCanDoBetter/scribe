@@ -18,7 +18,6 @@
     "proseWrap": "preserve",
     "exclude": [
       "docs/",
-      "tests/",
       "deno.json",
       "deno.lock"
     ]
