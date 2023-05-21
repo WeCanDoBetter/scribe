@@ -28,6 +28,18 @@ Deno.test("graph", async (t) => {
     tags: ["test"],
     metadata: { key: "value" },
     ops: {
+      addNode: async (_ctx, next) => {
+        await next();
+      },
+      addEdge: async (_ctx, next) => {
+        await next();
+      },
+      removeNode: async (_ctx, next) => {
+        await next();
+      },
+      removeEdge: async (_ctx, next) => {
+        await next();
+      },
       runFor: async (_ctx, next) => {
         await next();
       },
