@@ -24,7 +24,7 @@ interface MyCtx {
   counter: number;
 }
 
-Deno.test("pipeline", async (t) => {
+Deno.test("node", async (t) => {
   const node = new Node<MyCtx, Metadata>({
     name: "test",
     version: "1.0.0",
