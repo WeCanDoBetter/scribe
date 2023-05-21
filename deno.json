@@ -6,7 +6,9 @@
   },
   "test": {
     "include": [
+      "tests/task.ts",
       "tests/graph.ts",
+      "tests/node.ts",
       "tests/pipeline.ts"
     ]
   },

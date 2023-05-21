@@ -16,9 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Graph from "../lib/Graph.ts";
 import { AnyRecord, Metadata } from "../types.ts";
+import { runWorkflow } from "../util.ts";
 
 Deno.test("graph", async (t) => {
   const graph = new Graph<AnyRecord, Metadata>({
@@ -38,5 +39,18 @@ Deno.test("graph", async (t) => {
     assertEquals(graph.version, "1.0.0");
     assertEquals(graph.tags, ["test"]);
     assertEquals(graph.metadata, { key: "value" });
+  });
+
+  await t.step("should have no nodes", () => {
+    assertEquals(graph.nodes.size, 0);
+  });
+
+  await t.step("should have no edges", () => {
+    assertEquals(graph.edges.size, 0);
+  });
+
+  await t.step("should throw an error when running with no nodes", () => {
+    const ctx = {};
+    assertRejects(() => runWorkflow(graph, ctx), AggregateError, "Failed to run graph");
   });
 });

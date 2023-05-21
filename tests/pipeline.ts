@@ -16,12 +16,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { AnyRecord, Metadata } from "../types.ts";
+import type { Metadata } from "../types.ts";
 import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Pipeline from "../lib/Pipeline.ts";
+import { runWorkflow } from "../util.ts";
+
+interface MyCtx {
+  counter: number;
+}
 
 Deno.test("pipeline", async (t) => {
-  const pipeline = new Pipeline<AnyRecord, Metadata>({
+  const pipeline = new Pipeline<MyCtx, Metadata>({
     name: "test",
     version: "1.0.0",
     tags: ["test"],
@@ -41,5 +46,53 @@ Deno.test("pipeline", async (t) => {
     assertEquals(pipeline.version, "1.0.0");
     assertEquals(pipeline.tags, ["test"]);
     assertEquals(pipeline.metadata, { key: "value" });
+  });
+
+  await t.step("should have no workflows", () => {
+    assertEquals(pipeline.workflows.length, 0);
+  });
+
+  await t.step("should add a task workflow", () => {
+    pipeline.push(
+      async (ctx, next) => {
+        ctx.counter++;
+        await next();
+        ctx.counter++;
+      },
+    );
+
+    assertEquals(pipeline.workflows.length, 1);
+  });
+
+  await t.step("should run the task", async () => {
+    const ctx: MyCtx = { counter: 0 };
+
+    await runWorkflow(pipeline, ctx, () => {
+      assertEquals(ctx.counter, 1);
+      return Promise.resolve();
+    });
+
+    assertEquals(ctx.counter, 2);
+  });
+
+  await t.step("should add and run a second workflow task", async () => {
+    const ctx: MyCtx = { counter: 0 };
+
+    pipeline.push(
+      async (ctx, next) => {
+        ctx.counter++;
+        await next();
+        ctx.counter++;
+      },
+    );
+
+    assertEquals(pipeline.workflows.length, 2);
+
+    await runWorkflow(pipeline, ctx, () => {
+      assertEquals(ctx.counter, 2);
+      return Promise.resolve();
+    });
+
+    assertEquals(ctx.counter, 4);
   });
 });
