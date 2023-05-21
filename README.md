@@ -2,16 +2,19 @@
 
 ![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
 [![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
-
-> **IMPORTANT**: Please be aware that the Scribe project is currently in its
-> **alpha phase**. This means that the project is still in its early stages of
-> development, and **is not ready for use in a production environment**. For
-> more information, see our [alpha release disclaimer](ALPHA.md).
+[![Deno](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
+![GitHub issues](https://img.shields.io/github/issues/WeCanDoBetter/scribe)
 
 Scribe is an innovative context-aware workflow orchestrator designed to manage
 and execute complex computational workflows. With the ability to share and
 manipulate state data across different tasks, Scribe is the perfect tool to
 design workflows for AI development, data processing, and much more.
+
+> **IMPORTANT**: Please be aware that the Scribe project is currently in its
+> **alpha phase**. This means that the project is still in its early stages of
+> development, and **is not ready for use in a production environment**. For
+> more information, see our [alpha release disclaimer](ALPHA.md).
 
 ![Scribe](./.github/img/scribe-text.png)
 
@@ -22,8 +25,6 @@ leveraging a shared and manipulable state data paradigm.
 
 Join us on this exciting journey and become a part of the future of workflow
 management with Scribe! 🥳
-
-[Documentation](https://scribe.wcdb.life)
 
 ## 🎉 Features
 
@@ -42,8 +43,7 @@ management with Scribe! 🥳
 - **💪 No native dependencies**: Scribe is a standalone library without native dependencies,
   making it easy to integrate into your project and simplifying deployment.
 
-<!-- - **📊 Performance Measurements**: Track the performance of your pipelines and
-  tasks for optimization. -->
+[Documentation](https://scribe.wcdb.life) - [Project website](https://www.wcdb.life/scribe)
 
 ## 🚀 Getting Started
 
@@ -57,9 +57,11 @@ potential of Scribe.
 Explore the extensive documentation and code examples in our
 [documentation](https://scribe.wcdb.life) to dive deeper into the capabilities of Scribe, or use
 our fully interactive book
-[Mastering Scribe: Context Workflows](https://scribe.wcdb.life). Gain insights
+[Mastering Scribe: Context Workflows](https://scribe.wcdb.life)*. Gain insights
 into advanced features, best practices, and use cases that can transform your
 applications.
+
+<small>* Coming soon</small>
 
 ## ⚡ Coming Soon
 
@@ -104,13 +106,12 @@ information in the [contact section](CONTACT.md).
 ## 🔗 Links
 
 - [Project Page](https://www.wcdb.life/scribe)
-- [Documentation](https://WeCanDoBetter.gihub.io/scribe)
-  - [Getting Started](https://WeCanDoBetter.gihub.io/scribe/docs/getting-started/introduction)
-  - [Mastering Scribe: Context Workflows](/docs/mastering-scribe) (interactive
-    book)
+- [Documentation](https://scribe.wcdb.life)
+  - [Getting Started](https://scribe.wcdb.life/getting-started/introduction)
+  - Mastering Scribe: Context Workflows (coming soon)
 - [Blog](https://www.wcdb.life/blog)
 
 ## 📰 Posts
 
-- [Introducing Scribe](https://www.wcdb.life/blog/introducing-scribe) (29
+- [Introducing Scribe](https://www.wcdb.life/blog/introducing-scribe) (21
   May 2023)
