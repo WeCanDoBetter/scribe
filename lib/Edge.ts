@@ -18,8 +18,9 @@
 
 import type { Metadata, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
-import Node, { EdgeType } from "./Node.ts";
+import type Node from "./Node.ts";
 import SharedComponent from "./SharedComponent.ts";
+import { EdgeType } from "../util.ts";
 
 /**
  * The operations that can be performed on an edge.

@@ -16,10 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Graph } from "../mod.ts";
 import type { Metadata, Workflow } from "../types.ts";
+import type { SharedOptions } from "./SharedComponent.ts";
+import { EdgeType } from "../util.ts";
+import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
+import Graph from "./Graph.ts";
 import Edge from "./Edge.ts";
-import SharedComponent, { SharedErrorEvent, SharedEvent, SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
@@ -42,11 +44,6 @@ export interface NodeOptions<Ctx, Meta extends Metadata> extends SharedOptions<O
   readonly edges?: Edge<Ctx, Metadata>[];
   /** The maximum number of contexts that can be active for this node. */
   readonly concurrency?: number;
-}
-
-export enum EdgeType {
-  Incoming,
-  Outgoing,
 }
 
 export class NodeAPI<Ctx, Meta extends Metadata> {
@@ -219,6 +216,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
           if (index !== -1) {
             this.#edges.splice(index, 1);
           }
+          opCtx.removed = true;
         }
         return Promise.resolve();
       });

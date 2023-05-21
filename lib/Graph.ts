@@ -19,7 +19,8 @@
 import type { Metadata, Workflow } from "../types.ts";
 import { noopAsync } from "../util.ts";
 import Edge from "./Edge.ts";
-import Node, { EdgeType } from "./Node.ts";
+import Node from "./Node.ts";
+import { EdgeType } from "../util.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {

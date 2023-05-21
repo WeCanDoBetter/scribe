@@ -19,6 +19,11 @@
 import { isGraph, isPipeline, isTask } from "./type-guards.ts";
 import type { Tail, Workflow } from "./types.ts";
 
+export enum EdgeType {
+  Incoming,
+  Outgoing,
+}
+
 export function noopAsync(): Promise<void> {
   return Promise.resolve();
 }
