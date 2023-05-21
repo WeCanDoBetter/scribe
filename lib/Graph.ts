@@ -17,12 +17,16 @@
  */
 
 import type { Metadata, Workflow } from "../types.ts";
+import { noopAsync } from "../util.ts";
 import Edge from "./Edge.ts";
 import Node, { EdgeType } from "./Node.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
-  // push: Workflow<{ workflow: Workflow<Ctx> }>;
+  addNode: Workflow<{ node: Node<Ctx, Metadata>; add: boolean; added: boolean }>;
+  addEdge: Workflow<{ source: Node<Ctx, Metadata>; target: Node<Ctx, Metadata>; add: boolean; added: boolean }>;
+  removeNode: Workflow<{ node: Node<Ctx, Metadata>; remove: boolean; removed: boolean }>;
+  removeEdge: Workflow<{ edge: Edge<Ctx, Metadata>; remove: boolean; removed: boolean }>;
   runFor: Workflow<{ ctx: Ctx }>;
 }
 
@@ -61,6 +65,82 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    */
   get edges(): ReadonlySet<Edge<Ctx, Metadata>> {
     return this.#edges;
+  }
+
+  /**
+   * Adds a node to the graph.
+   * @param node The node to add.
+   */
+  addNode(node: Node<Ctx, Metadata>): Promise<void> {
+    const opsCtx = { node, add: true, added: false };
+
+    return this.op("addNode", opsCtx, () => {
+      if (opsCtx.add) {
+        node.graph = this;
+        this.#nodes.add(node);
+        opsCtx.added = true;
+      }
+      return Promise.resolve();
+    });
+  }
+
+  /**
+   * Adds an edge to the graph.
+   * @param source The source node of the edge.
+   * @param target The target node of the edge.
+   */
+  addEdge(source: Node<Ctx, Metadata>, target: Node<Ctx, Metadata>): Promise<void> {
+    const opsCtx = { source, target, add: true, added: false };
+
+    return this.op("addEdge", opsCtx, async () => {
+      if (opsCtx.add) {
+        const edge = new Edge(source, target, {
+          ops: {
+            write: noopAsync,
+          },
+        });
+        await source.addEdge(edge);
+        await target.addEdge(edge);
+        this.#edges.add(edge);
+        opsCtx.added = true;
+      }
+    });
+  }
+
+  /**
+   * Removes a node from the graph.
+   * @param node The node to remove.
+   */
+  removeNode(node: Node<Ctx, Metadata>): Promise<void> {
+    const opsCtx = { node, remove: true, removed: false };
+
+    return this.op("removeNode", opsCtx, async () => {
+      if (opsCtx.remove) {
+        for (const edge of opsCtx.node.edges) {
+          await this.removeEdge(edge);
+        }
+        node.graph = undefined;
+        this.#nodes.delete(node);
+        opsCtx.removed = true;
+      }
+    });
+  }
+
+  /**
+   * Removes an edge from the graph.
+   * @param edge The edge to remove.
+   */
+  removeEdge(edge: Edge<Ctx, Metadata>): Promise<void> {
+    const opsCtx = { edge, remove: true, removed: false };
+
+    return this.op("removeEdge", opsCtx, async () => {
+      if (opsCtx.remove) {
+        await opsCtx.edge.source.removeEdge(edge);
+        await opsCtx.edge.target.removeEdge(edge);
+        this.#edges.delete(edge);
+        opsCtx.removed = true;
+      }
+    });
   }
 
   /**

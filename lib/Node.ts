@@ -18,16 +18,12 @@
 
 import { Graph } from "../mod.ts";
 import type { Metadata, Workflow } from "../types.ts";
-import { noopAsync } from "../util.ts";
 import Edge from "./Edge.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent, SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
-  addEdge: Workflow<{
-    source: Node<Ctx, Metadata>;
-    target: Node<Ctx, Metadata>;
-  }>;
-  removeEdge: Workflow<{ edge: Edge<Ctx, Metadata> }>;
+  addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
+  removeEdge: Workflow<{ edge: Edge<Ctx, Metadata>; remove: boolean; removed: boolean }>;
   write: Workflow<{
     type: EdgeType;
     ctx: Ctx;
@@ -168,14 +164,12 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
 
   /**
    * Add an edge to this node.
-   * @param source The source node of the edge.
-   * @param target The target node of the edge.
+   * @param edge The edge to add.
    * @returns A promise that resolves when the edge has been added.
    * @throws An `AggregateError` if the edge could not be added.
    */
   async addEdge(
-    source: Node<Ctx, Metadata>,
-    target: Node<Ctx, Metadata>,
+    edge: Edge<Ctx, Metadata>,
   ): Promise<void> {
     try {
       if (!this.#initialized) {
@@ -184,13 +178,13 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Cannot add edge to corrupted node");
       }
 
-      await this.op("addEdge", { source, target }, () => {
-        const edge = new Edge(source, target, {
-          ops: {
-            write: noopAsync,
-          },
-        });
-        this.#edges.push(edge);
+      const opCtx = { edge, add: true, added: false };
+
+      await this.op("addEdge", opCtx, () => {
+        if (opCtx.add) {
+          this.#edges.push(edge);
+          opCtx.added = true;
+        }
         return Promise.resolve();
       });
     } catch (error) {
@@ -217,10 +211,14 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Cannot remove edge from corrupted node");
       }
 
-      await this.op("removeEdge", { edge }, () => {
-        const index = this.#edges.indexOf(edge);
-        if (index !== -1) {
-          this.#edges.splice(index, 1);
+      const opCtx = { edge, remove: true, removed: false };
+
+      await this.op("removeEdge", opCtx, () => {
+        if (opCtx.remove) {
+          const index = this.#edges.indexOf(edge);
+          if (index !== -1) {
+            this.#edges.splice(index, 1);
+          }
         }
         return Promise.resolve();
       });
