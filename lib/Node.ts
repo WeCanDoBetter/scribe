@@ -147,16 +147,14 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   }
 
   /**
-   * Get all edges that are connected to this node. If `type` is specified, then
-   * only edges of that type will be returned. If `type` is not specified, then
-   * all edges will be returned.
+   * Get all edges that are connected to this node.
    * @param filter A filter function that determines which edges to return.
    * @returns The edges that are connected to this node and match the filter.
    */
   getEdges(
-    filter: (edge: Edge<Ctx, Metadata>) => boolean,
+    filter?: (edge: Edge<Ctx, Metadata>) => boolean,
   ): Edge<Ctx, Metadata>[] {
-    return this.#edges.filter(filter);
+    return filter ? this.#edges.filter(filter) : [...this.#edges];
   }
 
   /**
@@ -169,10 +167,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     edge: Edge<Ctx, Metadata>,
   ): Promise<void> {
     try {
-      if (!this.#initialized) {
-        throw new Error("Cannot add edge to uninitialized node");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Cannot add edge to corrupted node");
+      } else if (!this.#initialized) {
+        throw new Error("Cannot add edge to uninitialized node");
       }
 
       const opCtx = { edge, add: true, added: false };
@@ -202,10 +200,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async removeEdge(edge: Edge<Ctx, Metadata>): Promise<void> {
     try {
-      if (!this.#initialized) {
-        throw new Error("Cannot remove edge from uninitialized node");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Cannot remove edge from corrupted node");
+      } else if (!this.#initialized) {
+        throw new Error("Cannot remove edge from uninitialized node");
       }
 
       const opCtx = { edge, remove: true, removed: false };
@@ -238,10 +236,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async runFor(ctx: Ctx): Promise<void> {
     try {
-      if (!this.#initialized) {
-        throw new Error("Cannot run uninitialized node");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Cannot run corrupted node");
+      } else if (!this.#initialized) {
+        throw new Error("Cannot run uninitialized node");
       }
 
       await this.op(
@@ -271,10 +269,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async write(type: EdgeType, ctx: Ctx): Promise<void> {
     try {
-      if (!this.#initialized) {
-        throw new Error("Cannot write from or to uninitialized node");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Cannot write from or to corrupted node");
+      } else if (!this.#initialized) {
+        throw new Error("Cannot write from or to uninitialized node");
       }
 
       const opsCtx = {
@@ -352,10 +350,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async #init(): Promise<void> {
     try {
-      if (this.#initialized) {
-        throw new Error("Node is already initialized");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Node is corrupted");
+      } else if (this.#initialized) {
+        throw new Error("Node is already initialized");
       }
 
       await this.op("init", { api: this.api }, () => {
@@ -380,10 +378,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async destroy(): Promise<void> {
     try {
-      if (!this.#initialized) {
-        throw new Error("Node is not initialized");
-      } else if (this.#corrupted) {
+      if (this.#corrupted) {
         throw new Error("Node is corrupted");
+      } else if (!this.#initialized) {
+        throw new Error("Node is not initialized");
       }
 
       await this.op("destroy", { api: this.api }, () => {
@@ -408,7 +406,11 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    * @throws If the node is already looping.
    */
   async #loop(): Promise<void> {
-    if (this.#looping) {
+    if (this.#corrupted) {
+      throw new Error("Node is corrupted");
+    } else if (!this.#initialized) {
+      throw new Error("Node is not initialized");
+    } else if (this.#looping) {
       throw new Error("Node is already looping");
     }
 
