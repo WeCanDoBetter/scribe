@@ -19,7 +19,14 @@
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Graph from "../lib/Graph.ts";
 import { AnyRecord, Metadata } from "../types.ts";
-import { runWorkflow } from "../util.ts";
+import { noopAsync, runWorkflow } from "../util.ts";
+import { Node } from "../mod.ts";
+
+function noopTask() {
+  return async (_ctx: AnyRecord, next: () => Promise<void>) => {
+    await next();
+  };
+}
 
 Deno.test("graph", async (t) => {
   const graph = new Graph<AnyRecord, Metadata>({
@@ -28,21 +35,11 @@ Deno.test("graph", async (t) => {
     tags: ["test"],
     metadata: { key: "value" },
     ops: {
-      addNode: async (_ctx, next) => {
-        await next();
-      },
-      addEdge: async (_ctx, next) => {
-        await next();
-      },
-      removeNode: async (_ctx, next) => {
-        await next();
-      },
-      removeEdge: async (_ctx, next) => {
-        await next();
-      },
-      runFor: async (_ctx, next) => {
-        await next();
-      },
+      addNode: noopTask(),
+      addEdge: noopTask(),
+      removeNode: noopTask(),
+      removeEdge: noopTask(),
+      runFor: noopTask(),
     },
   });
 
@@ -64,5 +61,63 @@ Deno.test("graph", async (t) => {
   await t.step("should throw an error when running with no nodes", () => {
     const ctx = {};
     assertRejects(() => runWorkflow(graph, ctx), AggregateError, "Failed to run graph");
+  });
+
+  await t.step("should throw an error when running with no start node", () => {
+    const ctx = {};
+    assertRejects(() => runWorkflow(graph, ctx), AggregateError, "Failed to run graph");
+  });
+
+  const node1 = new Node<AnyRecord, Metadata>({
+    name: "node1",
+    version: "1.0.0",
+    tags: ["test"],
+    metadata: { key: "value" },
+    ops: {
+      addEdge: noopTask(),
+      removeEdge: noopTask(),
+      incoming: noopTask(),
+      outgoing: noopAsync,
+      write: noopTask(),
+      runFor: noopTask(),
+      init: noopTask(),
+      run: noopTask(),
+      destroy: noopTask(),
+    },
+  });
+
+  await t.step("should add a node", async () => {
+    await graph.addNode(node1);
+    assertEquals(graph.nodes.size, 1);
+    assertEquals(graph.nodes.has(node1), true);
+  });
+
+  const node2 = new Node<AnyRecord, Metadata>({
+    name: "node1",
+    version: "1.0.0",
+    tags: ["test"],
+    metadata: { key: "value" },
+    ops: {
+      addEdge: noopTask(),
+      removeEdge: noopTask(),
+      incoming: noopTask(),
+      outgoing: noopAsync,
+      write: noopTask(),
+      runFor: noopTask(),
+      init: noopTask(),
+      run: noopTask(),
+      destroy: noopTask(),
+    },
+  });
+
+  await t.step("should add another node", async () => {
+    await graph.addNode(node2);
+    assertEquals(graph.nodes.size, 2);
+    assertEquals(graph.nodes.has(node2), true);
+  });
+
+  await t.step("should add an edge", async () => {
+    await graph.addEdge(node1, node2);
+    assertEquals(graph.edges.size, 1);
   });
 });

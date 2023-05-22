@@ -124,11 +124,11 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
 
     this.#init()
       .then(() => this.dispatchEvent(new NodeInitializedEvent(this)))
-      .catch((err) =>
+      .catch((err) => {
         // NOTE: Will also be called if the dispatch above throws an error.
         // Should we do something about that?
-        this.dispatchEvent(new NodeInitializationErrorEvent(this, err))
-      );
+        this.dispatchEvent(new NodeInitializationErrorEvent(this, err));
+      });
   }
 
   /**
@@ -373,7 +373,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
       await this.op("init", opCtx, () => {
         if (!opCtx.initialize) {
           return Promise.resolve();
-        } else if (opCtx.initialized || this.#initialized) {
+        } else if (this.#initialized) {
           throw new Error(
             "Node has already been initialized. If this is intentional, then set `initialize` to `false` in the `init` operation.",
           );
