@@ -42,7 +42,7 @@ export type Task<Ctx> = (ctx: Ctx, next: Next) => Promise<void>;
  * A workflow is a task, a pipeline or a graph.
  * @template Ctx The context type.
  */
-export type Workflow<Ctx> = Task<Ctx> | Pipeline<Ctx> | Graph<Ctx>;
+export type Workflow<Ctx = any> = Task<Ctx> | Pipeline<Ctx> | Graph<Ctx>;
 
 /**
  * A tail is a function that is called when the workflow is done.

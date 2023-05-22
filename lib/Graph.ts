@@ -72,13 +72,13 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param node The node to add.
    */
   addNode(node: Node<Ctx, Metadata>): Promise<void> {
-    const opsCtx = { node, add: true, added: false };
+    const opCtx = { node, add: true, added: false };
 
-    return this.op("addNode", opsCtx, () => {
-      if (opsCtx.add) {
+    return this.op("addNode", opCtx, () => {
+      if (opCtx.add) {
         node.graph = this;
         this.#nodes.add(node);
-        opsCtx.added = true;
+        opCtx.added = true;
       }
       return Promise.resolve();
     });
@@ -90,10 +90,10 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param target The target node of the edge.
    */
   addEdge(source: Node<Ctx, Metadata>, target: Node<Ctx, Metadata>): Promise<void> {
-    const opsCtx = { source, target, add: true, added: false };
+    const opCtx = { source, target, add: true, added: false };
 
-    return this.op("addEdge", opsCtx, async () => {
-      if (opsCtx.add) {
+    return this.op("addEdge", opCtx, async () => {
+      if (opCtx.add) {
         const edge = new Edge(source, target, {
           ops: {
             write: noopAsync,
@@ -102,7 +102,7 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
         await source.addEdge(edge);
         await target.addEdge(edge);
         this.#edges.add(edge);
-        opsCtx.added = true;
+        opCtx.added = true;
       }
     });
   }
@@ -112,16 +112,16 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param node The node to remove.
    */
   removeNode(node: Node<Ctx, Metadata>): Promise<void> {
-    const opsCtx = { node, remove: true, removed: false };
+    const opCtx = { node, remove: true, removed: false };
 
-    return this.op("removeNode", opsCtx, async () => {
-      if (opsCtx.remove) {
-        for (const edge of opsCtx.node.edges) {
+    return this.op("removeNode", opCtx, async () => {
+      if (opCtx.remove) {
+        for (const edge of opCtx.node.edges) {
           await this.removeEdge(edge);
         }
         node.graph = undefined;
         this.#nodes.delete(node);
-        opsCtx.removed = true;
+        opCtx.removed = true;
       }
     });
   }
@@ -131,14 +131,14 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param edge The edge to remove.
    */
   removeEdge(edge: Edge<Ctx, Metadata>): Promise<void> {
-    const opsCtx = { edge, remove: true, removed: false };
+    const opCtx = { edge, remove: true, removed: false };
 
-    return this.op("removeEdge", opsCtx, async () => {
-      if (opsCtx.remove) {
-        await opsCtx.edge.source.removeEdge(edge);
-        await opsCtx.edge.target.removeEdge(edge);
+    return this.op("removeEdge", opCtx, async () => {
+      if (opCtx.remove) {
+        await opCtx.edge.source.removeEdge(edge);
+        await opCtx.edge.target.removeEdge(edge);
         this.#edges.delete(edge);
-        opsCtx.removed = true;
+        opCtx.removed = true;
       }
     });
   }
@@ -152,7 +152,7 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    */
   runFor(ctx: Ctx): Promise<void> {
     const edges = [...this.#edges];
-    const opsCtx = {
+    const opCtx = {
       ctx,
       // Get all nodes that are not targets of any edges, because those are the
       // nodes that can be run first. This is because the nodes that are targets
@@ -162,14 +162,14 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
       }),
     };
 
-    return this.op("runFor", opsCtx, async () => {
+    return this.op("runFor", opCtx, async () => {
       try {
-        if (!opsCtx.targets.length) {
+        if (!opCtx.targets.length) {
           throw new Error("Graph has no input nodes");
         }
 
         const results = await Promise.allSettled(
-          opsCtx.targets.map((node) => node.write(null, ctx)),
+          opCtx.targets.map((node) => node.write(null, ctx)),
         );
 
         const rejected = results.filter((

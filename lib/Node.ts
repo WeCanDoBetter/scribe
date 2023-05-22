@@ -46,10 +46,10 @@ interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> 
     write: boolean;
     written: boolean;
   }>;
-  runFor: Workflow<{ ctx: Ctx }>;
+  runFor: Workflow<{ ctx: Ctx; run: boolean; ran: boolean }>;
   init: Workflow<{ api: NodeAPI<Ctx, Meta>; initialize: boolean; initialized: boolean }>;
   run: Workflow<{ api: NodeAPI<Ctx, Meta>; ctx: Ctx }>;
-  destroy: Workflow<{ api: NodeAPI<Ctx, Meta> }>;
+  destroy: Workflow<{ api: NodeAPI<Ctx, Meta>; destroy: boolean; destroyed: boolean }>;
 }
 
 export interface NodeOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx, Meta>, Meta> {
@@ -189,7 +189,11 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
       const opCtx = { edge, add: true, added: false };
 
       await this.op("addEdge", opCtx, () => {
-        if (opCtx.add) {
+        if (opCtx.added && opCtx.add) {
+          throw new Error(
+            "Edge has already been added. If this is intentional, then set `add` to `false` in the operation context.",
+          );
+        } else if (opCtx.add) {
           this.#edges.add(edge);
           opCtx.added = true;
         }
@@ -222,7 +226,11 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
       const opCtx = { edge, remove: true, removed: false };
 
       await this.op("removeEdge", opCtx, () => {
-        if (opCtx.remove) {
+        if (opCtx.removed && opCtx.remove) {
+          throw new Error(
+            "Edge has already been removed. If this is intentional, then set `remove` to `false` in the operation context.",
+          );
+        } else if (opCtx.remove) {
           opCtx.removed = this.#edges.delete(edge);
         }
         return Promise.resolve();
@@ -251,11 +259,18 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Cannot run uninitialized node");
       }
 
-      await this.op(
-        "runFor",
-        { ctx },
-        () => this.op("run", { api: this.api, ctx }),
-      );
+      const opCtx = { ctx, run: true, ran: false };
+
+      await this.op("runFor", opCtx, async () => {
+        if (opCtx.ran && opCtx.run) {
+          throw new Error(
+            "Node has already been run. If this is intentional, then set `run` to `false` in the `runFor` operation context.",
+          );
+        } else if (opCtx.run) {
+          await this.op("run", { api: this.api, ctx });
+          opCtx.ran = true;
+        }
+      });
     } catch (err) {
       const aggegrateError = new AggregateError(
         [err],
@@ -295,7 +310,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
       await this.op("write", opCtx, async () => {
         if (!opCtx.write) {
           return;
-        } else if (opCtx.written) {
+        } else if (opCtx.written && opCtx.write) {
           throw new Error(
             "Context has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
           );
@@ -311,7 +326,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
           await this.op("incoming", incomingCtx, () => {
             if (!incomingCtx.queue) {
               return Promise.resolve();
-            } else if (incomingCtx.queued) {
+            } else if (incomingCtx.queued && incomingCtx.queue) {
               throw new Error(
                 "Context has already been queued. If this is intentional, then set `queue` to `false` in the `incoming` operation.",
               );
@@ -405,7 +420,9 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Node is not initialized");
       }
 
-      await this.op("destroy", { api: this.api }, () => {
+      const opCtx = { api: this.api, destroy: true, destroyed: false };
+
+      await this.op("destroy", opCtx, () => {
         this.#initialized = false;
         return Promise.resolve();
       });

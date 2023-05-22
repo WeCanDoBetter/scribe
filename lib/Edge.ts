@@ -25,7 +25,7 @@ import SharedComponent from "./SharedComponent.ts";
  * The operations that can be performed on an edge.
  */
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
-  write: Workflow<Ctx>;
+  write: Workflow<{ ctx: Ctx; written: boolean; write: boolean }>;
 }
 
 /**
@@ -55,10 +55,23 @@ export default class Edge<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async write(ctx: Ctx): Promise<void> {
     try {
+      const opCtx = { ctx, written: false, write: true };
+
       await this.op(
         "write",
-        ctx,
-        () => this.target.write(this, ctx),
+        opCtx,
+        async () => {
+          if (!opCtx.write) {
+            return;
+          } else if (opCtx.written && opCtx.write) {
+            throw new Error(
+              "Edge has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
+            );
+          } else if (opCtx.write) {
+            await this.target.write(this, ctx);
+            opCtx.written = true;
+          }
+        },
       );
     } catch (error) {
       const aggegrateError = new AggregateError(

@@ -26,7 +26,7 @@ import type Pipeline from "./lib/Pipeline.ts";
  * @returns True if the workflow is a task, false otherwise.
  * @template Ctx The context type.
  */
-export function isTask<Ctx = any>(
+export function isTask<Ctx = unknown>(
   workflow: Workflow<Ctx>,
 ): workflow is Task<Ctx> {
   return typeof workflow === "function";
@@ -38,7 +38,7 @@ export function isTask<Ctx = any>(
  * @returns True if the workflow is a pipeline, false otherwise.
  * @template Ctx The context type.
  */
-export function isPipeline<Ctx = any>(
+export function isPipeline<Ctx = unknown>(
   workflow: Workflow<Ctx>,
 ): workflow is Pipeline<Ctx> {
   // NOTE: We do this and not `workflow instanceof Pipeline` because
@@ -52,7 +52,7 @@ export function isPipeline<Ctx = any>(
  * @returns True if the workflow is a graph, false otherwise.
  * @template Ctx The context type.
  */
-export function isGraph<Ctx = any>(
+export function isGraph<Ctx = unknown>(
   workflow: Workflow<Ctx>,
 ): workflow is Graph<Ctx> {
   // NOTE: We do this and not `workflow instanceof Pipeline` because
