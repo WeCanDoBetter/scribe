@@ -77,6 +77,6 @@ Deno.test("node", async (t) => {
   });
 
   await t.step("should have no edges", () => {
-    assertEquals(node.edges.length, 0);
+    assertEquals(node.edges.size, 0);
   });
 });

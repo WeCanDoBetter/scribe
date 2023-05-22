@@ -111,7 +111,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   /** Whether this node is looping. */
   #looping = false;
   /** The edges that are connected to this node. */
-  #edges: Edge<Ctx, Metadata>[];
+  #edges: Set<Edge<Ctx, Metadata>>;
   /** The contexts that are currently active for this node. */
   #activeContexts = new Map<Ctx, number>();
   /** The contexts that are queued for this node. */
@@ -120,7 +120,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   constructor(options: NodeOptions<Ctx, Meta>) {
     super(options);
     this.concurrency = options.concurrency;
-    this.#edges = options.edges ? [...options.edges] : [];
+    this.#edges = new Set(options.edges ? [...options.edges] : []);
 
     this.#init()
       .then(() => this.dispatchEvent(new NodeInitializedEvent(this)))
@@ -148,7 +148,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   /**
    * The edges that are connected to this node.
    */
-  get edges(): ReadonlyArray<Edge<Ctx, Metadata>> {
+  get edges(): ReadonlySet<Edge<Ctx, Metadata>> {
     return this.#edges;
   }
 
@@ -167,7 +167,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   getEdges(
     filter?: (edge: Edge<Ctx, Metadata>) => boolean,
   ): Edge<Ctx, Metadata>[] {
-    return filter ? this.#edges.filter(filter) : [...this.#edges];
+    return filter ? [...this.#edges].filter(filter) : [...this.#edges];
   }
 
   /**
@@ -190,7 +190,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
 
       await this.op("addEdge", opCtx, () => {
         if (opCtx.add) {
-          this.#edges.push(edge);
+          this.#edges.add(edge);
           opCtx.added = true;
         }
         return Promise.resolve();
@@ -223,11 +223,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
 
       await this.op("removeEdge", opCtx, () => {
         if (opCtx.remove) {
-          const index = this.#edges.indexOf(edge);
-          if (index !== -1) {
-            this.#edges.splice(index, 1);
-          }
-          opCtx.removed = true;
+          opCtx.removed = this.#edges.delete(edge);
         }
         return Promise.resolve();
       });
@@ -321,6 +317,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
               );
             }
             this.#queue.push(ctx);
+            incomingCtx.queued = true;
             return Promise.resolve();
           });
 
