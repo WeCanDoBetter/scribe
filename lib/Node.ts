@@ -18,7 +18,6 @@
 
 import type { Metadata, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
-import { EdgeType } from "../util.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
 import Graph from "./Graph.ts";
 import Edge from "./Edge.ts";
@@ -26,15 +25,29 @@ import Edge from "./Edge.ts";
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
   removeEdge: Workflow<{ edge: Edge<Ctx, Metadata>; remove: boolean; removed: boolean }>;
+  incoming: Workflow<{
+    ctx: Ctx;
+    edge: Edge<Ctx, Metadata> | null;
+    api: NodeAPI<Ctx, Meta>;
+    queue: boolean;
+    queued: boolean;
+  }>;
+  outgoing: Workflow<{
+    ctx: Ctx;
+    edge: Edge<Ctx, Metadata>;
+    api: NodeAPI<Ctx, Meta>;
+    pass: boolean;
+    passed: boolean;
+  }>;
   write: Workflow<{
-    type: EdgeType;
+    edge: Edge<Ctx, Metadata> | null;
     ctx: Ctx;
     edges: Edge<Ctx, Metadata>[];
     write: boolean;
     written: boolean;
   }>;
   runFor: Workflow<{ ctx: Ctx }>;
-  init: Workflow<{ api: NodeAPI<Ctx, Meta> }>;
+  init: Workflow<{ api: NodeAPI<Ctx, Meta>; initialize: boolean; initialized: boolean }>;
   run: Workflow<{ api: NodeAPI<Ctx, Meta>; ctx: Ctx }>;
   destroy: Workflow<{ api: NodeAPI<Ctx, Meta> }>;
 }
@@ -267,7 +280,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    * @returns A promise that resolves when the context has been written.
    * @throws An `AggregateError` if the context could not be written.
    */
-  async write(type: EdgeType, ctx: Ctx): Promise<void> {
+  async write(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
     try {
       if (this.#corrupted) {
         throw new Error("Cannot write from or to corrupted node");
@@ -275,38 +288,41 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Cannot write from or to uninitialized node");
       }
 
-      const opsCtx = {
-        type,
+      const opCtx = {
+        edge,
         ctx,
-        edges: this.getEdges((edge) => type === EdgeType.Incoming ? edge.target === this : edge.source === this),
+        edges: this.getEdges((e) => e.target === this ? e.source === this : e.target === this),
         write: true,
         written: false,
-        runStrategy: "full", // full means wait for edges to send the same context
       };
 
-      await this.op("write", opsCtx, async () => {
-        if (!opsCtx.write) {
+      await this.op("write", opCtx, async () => {
+        if (!opCtx.write) {
           return;
-        } else if (opsCtx.written) {
+        } else if (opCtx.written) {
           throw new Error(
             "Context has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
           );
-        } else if (!opsCtx.edges.length) {
+        } else if (!opCtx.edges.length) {
           throw new Error("No edges to write to");
         }
 
-        const read = () => {
+        const read = async () => {
           const count = (this.#activeContexts.get(ctx) ?? 0) + 1;
           this.#activeContexts.set(ctx, count);
 
-          if (
-            opsCtx.runStrategy === "full" &&
-            count === this.getEdges((edge) => edge.target === this).length
-          ) {
+          const incomingCtx = { ctx, edge, api: this.api, queue: true, queued: false };
+          await this.op("incoming", incomingCtx, () => {
+            if (!incomingCtx.queue) {
+              return Promise.resolve();
+            } else if (incomingCtx.queued) {
+              throw new Error(
+                "Context has already been queued. If this is intentional, then set `queue` to `false` in the `incoming` operation.",
+              );
+            }
             this.#queue.push(ctx);
-          } else if (opsCtx.runStrategy === "atomic") {
-            this.#queue.push(ctx);
-          }
+            return Promise.resolve();
+          });
 
           if (!this.#looping && this.#queue.length) {
             this.#loop().catch((err) => {
@@ -317,7 +333,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
 
         // Write to the edges in parallel.
         const results = await Promise.allSettled(
-          opsCtx.edges.map((edge) => edge.source === this ? edge.write(ctx) : read()),
+          opCtx.edges.map((e) => e.source === this ? e.write(ctx) : read()),
         );
 
         const rejected = results.filter(
@@ -331,7 +347,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
           );
         }
 
-        opsCtx.written = true;
+        opCtx.written = true;
       });
     } catch (err) {
       const aggegrateError = new AggregateError(
@@ -356,7 +372,15 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Node is already initialized");
       }
 
-      await this.op("init", { api: this.api }, () => {
+      const opCtx = { api: this.api, initialize: true, initialized: false };
+      await this.op("init", opCtx, () => {
+        if (!opCtx.initialize) {
+          return Promise.resolve();
+        } else if (opCtx.initialized || this.#initialized) {
+          throw new Error(
+            "Node has already been initialized. If this is intentional, then set `initialize` to `false` in the `init` operation.",
+          );
+        }
         this.#initialized = true;
         return Promise.resolve();
       });

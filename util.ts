@@ -16,13 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { isGraph, isPipeline, isTask } from "./type-guards.ts";
 import type { Tail, Workflow } from "./types.ts";
-
-export enum EdgeType {
-  Incoming,
-  Outgoing,
-}
+import { isGraph, isPipeline, isTask } from "./type-guards.ts";
 
 export function noopAsync(): Promise<void> {
   return Promise.resolve();

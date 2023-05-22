@@ -20,7 +20,6 @@ import type { Metadata, Workflow } from "../types.ts";
 import { noopAsync } from "../util.ts";
 import Edge from "./Edge.ts";
 import Node from "./Node.ts";
-import { EdgeType } from "../util.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
@@ -170,7 +169,7 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
         }
 
         const results = await Promise.allSettled(
-          opsCtx.targets.map((node) => node.write(EdgeType.Incoming, ctx)),
+          opsCtx.targets.map((node) => node.write(null, ctx)),
         );
 
         const rejected = results.filter((

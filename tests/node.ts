@@ -37,6 +37,12 @@ Deno.test("node", async (t) => {
       removeEdge: async (_ctx, next) => {
         await next();
       },
+      incoming: async (_ctx, next) => {
+        await next();
+      },
+      outgoing: async (_ctx, next) => {
+        await next();
+      },
       write: async (_ctx, next) => {
         await next();
       },

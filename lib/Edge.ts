@@ -20,7 +20,6 @@ import type { Metadata, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
 import type Node from "./Node.ts";
 import SharedComponent from "./SharedComponent.ts";
-import { EdgeType } from "../util.ts";
 
 /**
  * The operations that can be performed on an edge.
@@ -59,7 +58,7 @@ export default class Edge<Ctx, Meta extends Metadata> extends SharedComponent<Op
       await this.op(
         "write",
         ctx,
-        () => this.target.write(EdgeType.Incoming, ctx),
+        () => this.target.write(this, ctx),
       );
     } catch (error) {
       const aggegrateError = new AggregateError(

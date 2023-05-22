@@ -17,8 +17,8 @@
  */
 
 import type { Task, Workflow } from "./types.ts";
-import Graph from "./lib/Graph.ts";
-import Pipeline from "./lib/Pipeline.ts";
+import type Graph from "./lib/Graph.ts";
+import type Pipeline from "./lib/Pipeline.ts";
 
 /**
  * Checks if a workflow is a task.
@@ -41,7 +41,9 @@ export function isTask<Ctx = any>(
 export function isPipeline<Ctx = any>(
   workflow: Workflow<Ctx>,
 ): workflow is Pipeline<Ctx> {
-  return workflow instanceof Pipeline;
+  // NOTE: We do this and not `workflow instanceof Pipeline` because
+  //      of a circular dependency issue when importing Pipeline.
+  return typeof workflow === "object" && (workflow as Pipeline<Ctx>).push !== undefined;
 }
 
 /**
@@ -53,5 +55,7 @@ export function isPipeline<Ctx = any>(
 export function isGraph<Ctx = any>(
   workflow: Workflow<Ctx>,
 ): workflow is Graph<Ctx> {
-  return workflow instanceof Graph;
+  // NOTE: We do this and not `workflow instanceof Pipeline` because
+  //      of a circular dependency issue when importing Graph.
+  return typeof workflow === "object" && (workflow as Graph<Ctx>).addNode !== undefined;
 }

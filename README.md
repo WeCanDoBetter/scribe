@@ -38,10 +38,10 @@ management with Scribe! 🥳
   task for advanced operations.
 - **🛠️ Extensibility**: Add your workflows to core pipelines, customizing
   Scribe's behavior to meet your needs.
-- **🔒 Built with TypeScript**: Scribe is developed using TypeScript, providing
-  better type safety, autocompletion, and an overall improved development experience.
-- **💪 No native dependencies**: Scribe is a standalone library without native dependencies,
-  making it easy to integrate into your project and simplifying deployment.
+- **🔒 Built with TypeScript**: Providing better type safety, autocompletion,
+  and an improved development experience.
+- **💪 No native dependencies**: Making it easy to integrate into your project
+  and simplifying deployment.
 
 [Documentation](https://scribe.wcdb.life) - [Project website](https://www.wcdb.life/scribe)
 
@@ -56,8 +56,7 @@ potential of Scribe.
 
 Explore the extensive documentation and code examples in our
 [documentation](https://scribe.wcdb.life) to dive deeper into the capabilities of Scribe, or use
-our fully interactive book
-[Mastering Scribe: Context Workflows](https://scribe.wcdb.life)*. Gain insights
+our fully interactive book Mastering Scribe*. Gain insights
 into advanced features, best practices, and use cases that can transform your
 applications.
 
@@ -108,7 +107,7 @@ information in the [contact section](CONTACT.md).
 - [Project Page](https://www.wcdb.life/scribe)
 - [Documentation](https://scribe.wcdb.life)
   - [Getting Started](https://scribe.wcdb.life/getting-started/introduction)
-  - Mastering Scribe: Context Workflows (coming soon)
+  - Mastering Scribe <small>(coming soon)</small>
 - [Blog](https://www.wcdb.life/blog)
 
 ## 📰 Posts
