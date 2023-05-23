@@ -19,7 +19,7 @@
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Graph from "../lib/Graph.ts";
 import { AnyRecord, Metadata } from "../types.ts";
-import { noopAsync, runWorkflow } from "../util.ts";
+import { runWorkflow } from "../util.ts";
 import { Node } from "../mod.ts";
 
 function noopTask() {
@@ -77,8 +77,7 @@ Deno.test("graph", async (t) => {
       addEdge: noopTask(),
       removeEdge: noopTask(),
       incoming: noopTask(),
-      outgoing: noopAsync,
-      write: noopTask(),
+      outgoing: noopTask(),
       runFor: noopTask(),
       init: noopTask(),
       run: noopTask(),
@@ -93,7 +92,7 @@ Deno.test("graph", async (t) => {
   });
 
   const node2 = new Node<AnyRecord, Metadata>({
-    name: "node1",
+    name: "node2",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
@@ -101,8 +100,7 @@ Deno.test("graph", async (t) => {
       addEdge: noopTask(),
       removeEdge: noopTask(),
       incoming: noopTask(),
-      outgoing: noopAsync,
-      write: noopTask(),
+      outgoing: noopTask(),
       runFor: noopTask(),
       init: noopTask(),
       run: noopTask(),
@@ -119,5 +117,23 @@ Deno.test("graph", async (t) => {
   await t.step("should add an edge", async () => {
     await graph.addEdge(node1, node2);
     assertEquals(graph.edges.size, 1);
+  });
+
+  await t.step("should send a message over the edge", async () => {
+    const ctx = { incoming: false, outgoing: false };
+
+    node1.ops.outgoing = (ctx, next) => {
+      ctx.ctx.outgoing = true;
+      return next();
+    };
+
+    node2.ops.incoming = (ctx, next) => {
+      ctx.ctx.incoming = true;
+      return next();
+    };
+
+    await node1.process(node1.getEdges()[0], ctx);
+    assertEquals(ctx.outgoing, true);
+    assertEquals(ctx.incoming, true);
   });
 });

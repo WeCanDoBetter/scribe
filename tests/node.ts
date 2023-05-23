@@ -43,9 +43,6 @@ Deno.test("node", async (t) => {
       outgoing: async (_ctx, next) => {
         await next();
       },
-      write: async (_ctx, next) => {
-        await next();
-      },
       runFor: async (_ctx, next) => {
         await next();
       },

@@ -55,24 +55,24 @@ export default class Edge<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   async write(ctx: Ctx): Promise<void> {
     try {
-      const opCtx = { ctx, written: false, write: true };
+      const opCtx = {
+        ctx,
+        write: true,
+        written: false,
+      };
 
-      await this.op(
-        "write",
-        opCtx,
-        async () => {
-          if (!opCtx.write) {
-            return;
-          } else if (opCtx.written && opCtx.write) {
-            throw new Error(
-              "Edge has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
-            );
-          } else if (opCtx.write) {
-            await this.target.write(this, ctx);
-            opCtx.written = true;
-          }
-        },
-      );
+      await this.op("write", opCtx, async () => {
+        if (!opCtx.write) {
+          return;
+        } else if (opCtx.written && opCtx.write) {
+          throw new Error(
+            "Edge has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
+          );
+        } else if (opCtx.write) {
+          await this.target.process(this, ctx);
+          opCtx.written = true;
+        }
+      });
     } catch (error) {
       const aggegrateError = new AggregateError(
         [error],

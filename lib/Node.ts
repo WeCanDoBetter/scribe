@@ -39,13 +39,6 @@ interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> 
     pass: boolean;
     passed: boolean;
   }>;
-  write: Workflow<{
-    edge: Edge<Ctx, Metadata> | null;
-    ctx: Ctx;
-    edges: Edge<Ctx, Metadata>[];
-    write: boolean;
-    written: boolean;
-  }>;
   runFor: Workflow<{ ctx: Ctx; run: boolean; ran: boolean }>;
   init: Workflow<{ api: NodeAPI<Ctx, Meta>; initialize: boolean; initialized: boolean }>;
   run: Workflow<{ api: NodeAPI<Ctx, Meta>; ctx: Ctx }>;
@@ -281,93 +274,95 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     }
   }
 
-  /**
-   * Write to this node. If `type` is `EdgeType.Incoming`, then the context will
-   * be added to the active contexts and the node will be run. If `type` is
-   * `EdgeType.Outgoing`, then the context will be removed from the active
-   * contexts and the context will be written to the edges.
-   * @param type The type of edge to write to.
-   * @param ctx The context to write.
-   * @returns A promise that resolves when the context has been written.
-   * @throws An `AggregateError` if the context could not be written.
-   */
-  async write(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
-    try {
-      if (this.#corrupted) {
-        throw new Error("Cannot write from or to corrupted node");
-      } else if (!this.#initialized) {
-        throw new Error("Cannot write from or to uninitialized node");
+  // read is called when an incoming edge (or if the edge is null for an input node)
+  // receives a context. It 'reads' from the edge and adds the context to the queue.
+  read(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
+    // edge.target = this
+
+    const opCtx = {
+      edge,
+      ctx,
+      api: this.api,
+      queue: true,
+      queued: false,
+    };
+
+    return this.op("incoming", opCtx, () => {
+      if (!opCtx.queue) {
+        return Promise.resolve();
+      } else if (opCtx.queue && opCtx.queued) {
+        throw new Error(
+          "Node has already been queued. If this is intentional, then set `queue` to `false` in the operation context.",
+        );
       }
 
-      const opCtx = {
-        edge,
-        ctx,
-        edges: this.getEdges((e) => e.target === this ? e.source === this : e.target === this),
-        write: true,
-        written: false,
-      };
+      this.#queue.push(ctx);
+      opCtx.queued = true;
 
-      await this.op("write", opCtx, async () => {
-        if (!opCtx.write) {
-          return;
-        } else if (opCtx.written && opCtx.write) {
-          throw new Error(
-            "Context has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
-          );
-        } else if (!opCtx.edges.length) {
-          throw new Error("No edges to write to");
-        }
+      // If the node is not looping, then start the loop
+      if (!this.#looping) {
+        this.#loop().catch((err) => {
+          this.dispatchEvent(new SharedErrorEvent(err));
+        });
+      }
 
-        const read = async () => {
-          const count = (this.#activeContexts.get(ctx) ?? 0) + 1;
-          this.#activeContexts.set(ctx, count);
+      return Promise.resolve();
+    });
+  }
 
-          const incomingCtx = { ctx, edge, api: this.api, queue: true, queued: false };
-          await this.op("incoming", incomingCtx, () => {
-            if (!incomingCtx.queue) {
-              return Promise.resolve();
-            } else if (incomingCtx.queued && incomingCtx.queue) {
-              throw new Error(
-                "Context has already been queued. If this is intentional, then set `queue` to `false` in the `incoming` operation.",
-              );
-            }
-            this.#queue.push(ctx);
-            incomingCtx.queued = true;
-            return Promise.resolve();
-          });
+  // write is called when an outgoing edge is activated. It 'writes' to the edge
+  write2(edge: Edge<Ctx, Metadata>, ctx: Ctx): Promise<void> {
+    // edge.source = this
 
-          if (!this.#looping && this.#queue.length) {
-            this.#loop().catch((err) => {
-              this.dispatchEvent(new SharedErrorEvent(err));
-            });
-          }
-        };
+    const opCtx = {
+      edge,
+      ctx,
+      api: this.api,
+      pass: true,
+      passed: false,
+    };
 
-        // Write to the edges in parallel.
-        const results = await Promise.allSettled(
-          opCtx.edges.map((e) => e.source === this ? e.write(ctx) : read()),
+    return this.op("outgoing", opCtx, async () => {
+      if (!opCtx.pass) {
+        return;
+      } else if (opCtx.pass && opCtx.passed) {
+        throw new Error(
+          "Node has already been passed. If this is intentional, then set `pass` to `false` in the operation context.",
         );
+      }
 
-        const rejected = results.filter(
-          (result): result is PromiseRejectedResult => result.status === "rejected",
-        );
+      // NOTE: This is basically useless, and a possible memory leak
+      // contexts may not be received as many times as they are passed,
+      // which results in a memory leak as the context is never removed
+      const count = (this.#activeContexts.get(ctx) ?? 1) - 1;
+      if (count) {
+        this.#activeContexts.set(ctx, count);
+      } else {
+        this.#activeContexts.delete(ctx);
+      }
+      await edge.write(ctx);
+      opCtx.passed = true;
+    });
+  }
 
-        if (rejected.length) {
-          throw new AggregateError(
-            rejected.map((result) => result.reason),
-            "Failed to write to edges",
-          );
-        }
-
-        opCtx.written = true;
-      });
-    } catch (err) {
-      const aggegrateError = new AggregateError(
-        [err],
-        "Failed to write to node",
-      );
-      this.dispatchEvent(new SharedErrorEvent(aggegrateError));
-      throw aggegrateError;
+  /**
+   * Process an edge for this node. This method will call the `read` or `write` operation on the node.
+   * @param edge The edge to process.
+   * @param ctx The context to process the edge with.
+   * @returns A promise that resolves when the edge has been processed.
+   * @throws An `AggregateError` if the edge could not be processed.
+   * @throws An `Error` if the edge does not belong to this node.
+   * @throws An `Error` if the node is corrupted.
+   * @throws An `Error` if the node is not initialized.
+   */
+  process(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
+    if (edge === null || edge.target === this) {
+      // Read is never called
+      return this.read(edge, ctx);
+    } else if (edge.source === this) {
+      return this.write2(edge, ctx);
+    } else {
+      return Promise.reject(new Error("Edge does not belong to this node"));
     }
   }
 
@@ -455,7 +450,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     this.#looping = true;
     while (this.#queue.length) {
       try {
-        const contexts = this.#queue.splice(0, this.concurrency);
+        const contexts = this.#queue.splice(0, this.concurrency ?? this.#queue.length);
 
         const results = await Promise.allSettled(
           contexts.map((ctx) => this.runFor(ctx)),
