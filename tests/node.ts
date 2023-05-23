@@ -76,4 +76,12 @@ Deno.test("node", async (t) => {
   await t.step("should have no edges", () => {
     assertEquals(node.edges.size, 0);
   });
+
+  await t.step("should destroy the node", async () => {
+    await node.destroy();
+  });
+
+  await t.step("should not be initialized", () => {
+    assertEquals(node.initialized, false);
+  });
 });

@@ -277,8 +277,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   // read is called when an incoming edge (or if the edge is null for an input node)
   // receives a context. It 'reads' from the edge and adds the context to the queue.
   read(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
-    // edge.target = this
-
     const opCtx = {
       edge,
       ctx,
@@ -311,9 +309,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   }
 
   // write is called when an outgoing edge is activated. It 'writes' to the edge
-  write2(edge: Edge<Ctx, Metadata>, ctx: Ctx): Promise<void> {
-    // edge.source = this
-
+  write(edge: Edge<Ctx, Metadata>, ctx: Ctx): Promise<void> {
     const opCtx = {
       edge,
       ctx,
@@ -360,7 +356,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
       // Read is never called
       return this.read(edge, ctx);
     } else if (edge.source === this) {
-      return this.write2(edge, ctx);
+      return this.write(edge, ctx);
     } else {
       return Promise.reject(new Error("Edge does not belong to this node"));
     }

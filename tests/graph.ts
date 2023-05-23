@@ -136,4 +136,27 @@ Deno.test("graph", async (t) => {
     assertEquals(ctx.outgoing, true);
     assertEquals(ctx.incoming, true);
   });
+
+  await t.step("should run a node", async () => {
+    const ctx = { run: false };
+
+    node2.ops.run = (ctx, next) => {
+      ctx.ctx.run = true;
+      return next();
+    };
+
+    await node2.runFor(ctx);
+    assertEquals(ctx.run, true);
+  });
+
+  await t.step("should remove an edge", async () => {
+    await graph.removeEdge(node1.getEdges()[0]);
+    assertEquals(graph.edges.size, 0);
+  });
+
+  await t.step("should remove a node", async () => {
+    await graph.removeNode(node1);
+    assertEquals(graph.nodes.size, 1);
+    assertEquals(graph.nodes.has(node1), false);
+  });
 });
