@@ -17,7 +17,7 @@
  */
 
 import type { Metadata } from "../types.ts";
-import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Pipeline from "../lib/Pipeline.ts";
 import { runWorkflow } from "../util.ts";
 
@@ -94,5 +94,57 @@ Deno.test("pipeline", async (t) => {
     });
 
     assertEquals(ctx.counter, 4);
+  });
+
+  await t.step("should throw an error when pushing empty workflows", () => {
+    assertRejects(() => pipeline.push(), Error, "No workflows provided");
+  });
+
+  await t.step("should create a pipeline with factory", () => {
+    const pipeline = Pipeline.create<MyCtx, Metadata>({
+      name: "test",
+      version: "1.0.0",
+      tags: ["test"],
+      metadata: { key: "value" },
+      workflows: [
+        async (_ctx, next) => {
+          await next();
+        },
+      ],
+    });
+
+    assertEquals(pipeline.name, "test");
+    assertEquals(pipeline.version, "1.0.0");
+    assertEquals(pipeline.tags, ["test"]);
+    assertEquals(pipeline.metadata, { key: "value" });
+  });
+
+  await t.step("should throw a push error", () => {
+    pipeline.ops.push = () => {
+      throw new Error("push error");
+    };
+
+    assertRejects(
+      () =>
+        pipeline.push(
+          async (_ctx, next) => {
+            await next();
+          },
+        ),
+      AggregateError,
+      "All pushes failed",
+    );
+  });
+
+  await t.step("should throw a runFor error", () => {
+    pipeline.ops.runFor = () => {
+      throw new Error("runFor error");
+    };
+
+    assertRejects(
+      () => pipeline.runFor({ counter: 0 }),
+      AggregateError,
+      "Pipeline failed",
+    );
   });
 });

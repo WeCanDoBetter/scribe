@@ -274,9 +274,23 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     }
   }
 
-  // read is called when an incoming edge (or if the edge is null for an input node)
-  // receives a context. It 'reads' from the edge and adds the context to the queue.
+  /**
+   * Read a context from an edge. This will queue the context for processing. If
+   * the node is not currently looping, then it will start the loop.
+   * @param edge The edge to read the context from.
+   * @param ctx The context to read.
+   * @returns A promise that resolves when the context has been read.
+   * @throws An `AggregateError` if the context could not be read.
+   * @throws An `Error` if the node is corrupted.
+   * @throws An `Error` if the node is not initialized.
+   */
   read(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
+    if (this.#corrupted) {
+      throw new Error("Cannot read from corrupted node");
+    } else if (!this.#initialized) {
+      throw new Error("Cannot read from uninitialized node");
+    }
+
     const opCtx = {
       edge,
       ctx,
@@ -294,6 +308,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
+      // TODO: Active context tracking
       this.#queue.push(ctx);
       opCtx.queued = true;
 
@@ -308,8 +323,22 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     });
   }
 
-  // write is called when an outgoing edge is activated. It 'writes' to the edge
+  /**
+   * Write a context to an edge.
+   * @param edge The edge to write the context to.
+   * @param ctx The context to write.
+   * @returns A promise that resolves when the context has been written.
+   * @throws An `AggregateError` if the context could not be written.
+   * @throws An `Error` if the node is corrupted.
+   * @throws An `Error` if the node is not initialized.
+   */
   write(edge: Edge<Ctx, Metadata>, ctx: Ctx): Promise<void> {
+    if (this.#corrupted) {
+      throw new Error("Cannot write to corrupted node");
+    } else if (!this.#initialized) {
+      throw new Error("Cannot write to uninitialized node");
+    }
+
     const opCtx = {
       edge,
       ctx,
@@ -327,15 +356,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
-      // NOTE: This is basically useless, and a possible memory leak
-      // contexts may not be received as many times as they are passed,
-      // which results in a memory leak as the context is never removed
-      const count = (this.#activeContexts.get(ctx) ?? 1) - 1;
-      if (count) {
-        this.#activeContexts.set(ctx, count);
-      } else {
-        this.#activeContexts.delete(ctx);
-      }
+      // TODO: Active context tracking
       await edge.write(ctx);
       opCtx.passed = true;
     });
@@ -353,7 +374,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   process(edge: Edge<Ctx, Metadata> | null, ctx: Ctx): Promise<void> {
     if (edge === null || edge.target === this) {
-      // Read is never called
       return this.read(edge, ctx);
     } else if (edge.source === this) {
       return this.write(edge, ctx);

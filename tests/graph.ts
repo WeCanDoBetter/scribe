@@ -149,6 +149,19 @@ Deno.test("graph", async (t) => {
     assertEquals(ctx.run, true);
   });
 
+  await t.step("should throw an error writing to edge when written", async () => {
+    const edge = node1.getEdges()[0];
+    edge.ops.write = (ctx, next) => {
+      ctx.written = true;
+      return next();
+    };
+
+    await assertRejects(
+      () => edge.write({}),
+      "Edge has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
+    );
+  });
+
   await t.step("should remove an edge", async () => {
     await graph.removeEdge(node1.getEdges()[0]);
     assertEquals(graph.edges.size, 0);

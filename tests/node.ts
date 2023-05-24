@@ -17,7 +17,7 @@
  */
 
 import type { Metadata } from "../types.ts";
-import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Node from "../lib/Node.ts";
 
 interface MyCtx {
@@ -83,5 +83,54 @@ Deno.test("node", async (t) => {
 
   await t.step("should not be initialized", () => {
     assertEquals(node.initialized, false);
+  });
+
+  await t.step("should be uninitialized", () => {
+    assertEquals(node.initialized, false);
+  });
+
+  await t.step("should throw an error when running and not initialized", async () => {
+    await assertRejects(() => node.runFor({ counter: 0 }), "Cannot run uninitialized node");
+  });
+
+  await t.step("should throw an error when destroying and not initialized", async () => {
+    await assertRejects(() => node.destroy(), "Cannot destroy uninitialized node");
+  });
+
+  await t.step("should get corrupted if init fails", () => {
+    new Node<MyCtx, Metadata>({
+      name: "test",
+      version: "1.0.0",
+      tags: ["test"],
+      metadata: { key: "value" },
+      ops: {
+        addEdge: async (_ctx, next) => {
+          await next();
+        },
+        removeEdge: async (_ctx, next) => {
+          await next();
+        },
+        incoming: async (_ctx, next) => {
+          await next();
+        },
+        outgoing: async (_ctx, next) => {
+          await next();
+        },
+        runFor: async (_ctx, next) => {
+          await next();
+        },
+        init: () => {
+          return Promise.reject(new Error("test"));
+        },
+        run: async (_ctx, next) => {
+          await next();
+        },
+        destroy: async (_ctx, next) => {
+          await next();
+        },
+      },
+    });
+
+    assertEquals(node.corrupted, true);
   });
 });
