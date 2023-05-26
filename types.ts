@@ -54,3 +54,10 @@ export type Tail<Ctx> = (ctx: Ctx) => Promise<void>;
  * The metadata of a workflow. This is an object with string keys, can contain any value.
  */
 export type Metadata = AnyRecord;
+
+/**
+ * A readonly weak set.
+ */
+export type ReadonlyWeakSet<T> = {
+  has(value: T): boolean;
+};

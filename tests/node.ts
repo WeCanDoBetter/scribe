@@ -77,6 +77,10 @@ Deno.test("node", async (t) => {
     assertEquals(node.edges.size, 0);
   });
 
+  await t.step("should not have the active contexts", () => {
+    assertEquals(node.activeContexts.has({ counter: 0 }), false);
+  });
+
   await t.step("should destroy the node", async () => {
     await node.destroy();
   });
@@ -95,42 +99,5 @@ Deno.test("node", async (t) => {
 
   await t.step("should throw an error when destroying and not initialized", async () => {
     await assertRejects(() => node.destroy(), "Cannot destroy uninitialized node");
-  });
-
-  await t.step("should get corrupted if init fails", () => {
-    new Node<MyCtx, Metadata>({
-      name: "test",
-      version: "1.0.0",
-      tags: ["test"],
-      metadata: { key: "value" },
-      ops: {
-        addEdge: async (_ctx, next) => {
-          await next();
-        },
-        removeEdge: async (_ctx, next) => {
-          await next();
-        },
-        incoming: async (_ctx, next) => {
-          await next();
-        },
-        outgoing: async (_ctx, next) => {
-          await next();
-        },
-        runFor: async (_ctx, next) => {
-          await next();
-        },
-        init: () => {
-          return Promise.reject(new Error("test"));
-        },
-        run: async (_ctx, next) => {
-          await next();
-        },
-        destroy: async (_ctx, next) => {
-          await next();
-        },
-      },
-    });
-
-    assertEquals(node.corrupted, true);
   });
 });

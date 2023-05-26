@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata, Workflow } from "../types.ts";
+import type { Metadata, ReadonlyWeakSet, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
 import Graph from "./Graph.ts";
@@ -106,7 +106,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   /** The edges that are connected to this node. */
   #edges: Set<Edge<Ctx, Metadata>>;
   /** The contexts that are currently active for this node. */
-  #activeContexts = new Map<Ctx, number>();
+  #activeContexts = new WeakSet<any>();
   /** The contexts that are queued for this node. */
   #queue: Ctx[] = [];
 
@@ -146,9 +146,12 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   }
 
   /**
-   * The contexts that are currently active for this node.
+   * The contexts that are currently active for this node. Note that this is a
+   * weak set, so the contexts will be garbage collected if they are not
+   * referenced anywhere else. Also, it is not possible to iterate over the
+   * contexts in this set.
    */
-  get activeContexts(): ReadonlyMap<Ctx, number> {
+  get activeContexts(): ReadonlyWeakSet<Ctx> {
     return this.#activeContexts;
   }
 
@@ -308,7 +311,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
-      // TODO: Active context tracking
+      this.#activeContexts.add(ctx);
       this.#queue.push(ctx);
       opCtx.queued = true;
 
@@ -356,7 +359,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
-      // TODO: Active context tracking
+      this.#activeContexts.delete(ctx);
       await edge.write(ctx);
       opCtx.passed = true;
     });
@@ -395,7 +398,12 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Node is already initialized");
       }
 
-      const opCtx = { api: this.api, initialize: true, initialized: false };
+      const opCtx = {
+        api: this.api,
+        initialize: true,
+        initialized: false,
+      };
+
       await this.op("init", opCtx, () => {
         if (!opCtx.initialize) {
           return Promise.resolve();
@@ -410,6 +418,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     } catch (err) {
       this.#initialized = false;
       this.#corrupted = true;
+      console.log(`Corrupted bool: ${this.#corrupted}`);
       const aggegrateError = new AggregateError(
         [err],
         "Failed to initialize node",
