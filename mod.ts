@@ -31,3 +31,4 @@ export { default as Edge } from "./lib/Edge.ts";
 export { default as Node } from "./lib/Node.ts";
 export { default as Pipeline } from "./lib/Pipeline.ts";
 export { default as Graph } from "./lib/Graph.ts";
+export { default as Scribe } from "./lib/Scribe.ts";
