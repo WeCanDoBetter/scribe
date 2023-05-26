@@ -54,3 +54,10 @@ export type Tail<Ctx> = (ctx: Ctx) => Promise<void>;
  * The metadata of a workflow. This is an object with string keys, can contain any value.
  */
 export type Metadata = AnyRecord;
+
+/**
+ * A partial type that makes some properties optional.
+ * @template T The type to make partial.
+ * @template K The keys of the type to make partial.
+ */
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

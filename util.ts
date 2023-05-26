@@ -16,12 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Tail, Workflow } from "./types.ts";
+import type { Tail, Task, Workflow } from "./types.ts";
 import { isGraph, isPipeline, isTask } from "./type-guards.ts";
 
-export function noopAsync(): Promise<void> {
-  return Promise.resolve();
-}
+/**
+ * A promise that resolves immediately.
+ */
+export const noopAsync = Promise.resolve;
+
+/**
+ * A task that does nothing.
+ */
+export const noopTask: Task<any> = (_ctx, next) => {
+  return next();
+};
 
 /**
  * Runs a workflow for a given context.
@@ -47,4 +55,58 @@ export async function runWorkflow<Ctx>(
       await tail(ctx);
     }
   }
+}
+
+/**
+ * The default operations for a Scribe instance. These operations do nothing, and
+ * can be overridden by the user if desired.
+ */
+export function createDefaultScribeOps() {
+  return {
+    createPipeline: noopTask,
+    createGraph: noopTask,
+    createNode: noopTask,
+  };
+}
+
+/**
+ * The default operations for a node instance. These operations do nothing, and
+ * can be overridden by the user if desired.
+ */
+export function createDefaultNodeOps() {
+  return {
+    addEdge: noopTask,
+    removeEdge: noopTask,
+    incoming: noopTask,
+    outgoing: noopTask,
+    runFor: noopTask,
+    init: noopTask,
+    run: noopTask,
+    destroy: noopTask,
+  };
+}
+
+/**
+ * The default operations for a pipeline instance. These operations do nothing,
+ * and can be overridden by the user if desired.
+ */
+export function createDefaultPipelineOps() {
+  return {
+    push: noopTask,
+    runFor: noopTask,
+  };
+}
+
+/**
+ * The default operations for a graph instance. These operations do nothing, and
+ * can be overridden by the user if desired.
+ */
+export function createDefaultGraphOps() {
+  return {
+    addNode: noopTask,
+    addEdge: noopTask,
+    removeNode: noopTask,
+    removeEdge: noopTask,
+    runFor: noopTask,
+  };
 }
