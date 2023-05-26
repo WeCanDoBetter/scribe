@@ -100,25 +100,6 @@ Deno.test("pipeline", async (t) => {
     assertRejects(() => pipeline.push(), Error, "No workflows provided");
   });
 
-  await t.step("should create a pipeline with factory", () => {
-    const pipeline = Pipeline.create<MyCtx, Metadata>({
-      name: "test",
-      version: "1.0.0",
-      tags: ["test"],
-      metadata: { key: "value" },
-      workflows: [
-        async (_ctx, next) => {
-          await next();
-        },
-      ],
-    });
-
-    assertEquals(pipeline.name, "test");
-    assertEquals(pipeline.version, "1.0.0");
-    assertEquals(pipeline.tags, ["test"]);
-    assertEquals(pipeline.metadata, { key: "value" });
-  });
-
   await t.step("should throw a push error", () => {
     pipeline.ops.push = () => {
       throw new Error("push error");

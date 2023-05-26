@@ -17,7 +17,7 @@
  */
 
 import type { Metadata, Next, Tail, Workflow } from "../types.ts";
-import { noopAsync, runWorkflow } from "../util.ts";
+import { runWorkflow } from "../util.ts";
 import SharedComponent, { SharedErrorEvent, SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
@@ -30,8 +30,6 @@ export interface PipelineOptions<Ctx, Meta extends Metadata> extends SharedOptio
   readonly workflows?: Workflow<Ctx>[];
 }
 
-type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
 /**
  * A pipeline is a collection of workflows that are executed in order. The
  * context is passed to each workflow in the pipeline. The context is also
@@ -40,24 +38,6 @@ type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * @template Ctx The context type.
  */
 export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends SharedComponent<Ops<Ctx>, Meta> {
-  /**
-   * Creates a new pipeline.
-   * @param options The options of the pipeline.
-   * @returns The created pipeline.
-   */
-  static create<Ctx, Meta extends Metadata = Metadata>(
-    options: PartialBy<PipelineOptions<Ctx, Meta>, "ops">,
-  ): Pipeline<Ctx, Meta> {
-    return new Pipeline({
-      ...options,
-      ops: {
-        push: noopAsync, // TODO: Set default push workflow.
-        runFor: noopAsync, // TODO: Set default runFor workflow.
-        ...options.ops,
-      },
-    });
-  }
-
   /** The workflows of this pipeline. */
   #workflows: Workflow<Ctx>[];
 

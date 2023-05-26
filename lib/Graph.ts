@@ -17,6 +17,7 @@
  */
 
 import type { Metadata, Workflow } from "../types.ts";
+import { noopTask } from "../util.ts";
 import Edge from "./Edge.ts";
 import Node from "./Node.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
@@ -89,15 +90,21 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param target The target node of the edge.
    */
   addEdge(source: Node<Ctx, Metadata>, target: Node<Ctx, Metadata>): Promise<void> {
-    const opCtx = { source, target, add: true, added: false };
+    const opCtx: {
+      source: Node<Ctx, Metadata>;
+      target: Node<Ctx, Metadata>;
+      add: boolean;
+      added: boolean;
+      ops?: {
+        write?: Workflow<any>;
+      };
+    } = { source, target, add: true, added: false };
 
     return this.op("addEdge", opCtx, async () => {
       if (opCtx.add) {
         const edge = new Edge(source, target, {
           ops: {
-            write: (_ctx, next) => {
-              return next();
-            },
+            write: opCtx.ops?.write ?? noopTask,
           },
         });
         await source.addEdge(edge);

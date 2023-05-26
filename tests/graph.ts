@@ -147,9 +147,9 @@ Deno.test("graph", async (t) => {
   await t.step("should run a node", async () => {
     const ctx = { run: false };
 
-    node2.ops.run = (ctx, next) => {
-      ctx.ctx.run = true;
-      return next();
+    node2.ops.run = ({ ctx }) => {
+      ctx.run = true;
+      return Promise.resolve();
     };
 
     await node2.runFor(ctx);

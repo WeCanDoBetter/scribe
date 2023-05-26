@@ -77,10 +77,6 @@ Deno.test("node", async (t) => {
     assertEquals(node.edges.size, 0);
   });
 
-  await t.step("should not have the active contexts", () => {
-    assertEquals(node.activeContexts.has({ counter: 0 }), false);
-  });
-
   await t.step("should destroy the node", async () => {
     await node.destroy();
   });
