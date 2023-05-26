@@ -104,9 +104,8 @@ Deno.test("graph", async (t) => {
       runFor: noopTask(),
       init: noopTask(),
       run: (c, next) => {
-        const { api } = c;
-        const o = api.output();
-        o.queue([...node1.edges.values()][0]);
+        const { output } = c;
+        output.queue([...node1.edges.values()][0]);
         // TODO: Actually write to the output
         // We need at least two edges, so 3 nodes for this to work
         // Rewrite everything to use the output

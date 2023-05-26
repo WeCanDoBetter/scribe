@@ -10,6 +10,8 @@ import { SharedErrorEvent } from "./SharedComponent.ts";
 export default class Output<Ctx> {
   /** The node that this output belongs to. */
   readonly node: Node<Ctx, Metadata>;
+  /** Whether this output should automatically flush. */
+  autoFlush = true;
 
   /** Whether this output has been flushed. */
   #flushed = false;
@@ -35,6 +37,13 @@ export default class Output<Ctx> {
   }
 
   /**
+   * The number of edges that are connected to this output.
+   */
+  get size(): number {
+    return this.#edges.size;
+  }
+
+  /**
    * Queue an edge.
    * @param edge The edge to queue.
    * @throws If the queue has already been flushed.
@@ -42,6 +51,10 @@ export default class Output<Ctx> {
   queue(edge: Edge<Ctx, Metadata>): void {
     if (this.#flushed) {
       throw new Error("Queue has already been flushed.");
+    } else if (this.#edges.has(edge)) {
+      throw new Error("Edge has already been queued.");
+    } else if (edge.source !== this.node) {
+      throw new Error("Edge does not belong to this node.");
     }
 
     this.#edges.add(edge);
@@ -69,7 +82,7 @@ export default class Output<Ctx> {
    */
   async flush(ctx: Ctx): Promise<void> {
     if (this.#flushed) {
-      return;
+      throw new Error("Queue has already been flushed.");
     }
 
     const results = await Promise.allSettled([...this.#edges].map((edge) => edge.source.process(edge, ctx)));

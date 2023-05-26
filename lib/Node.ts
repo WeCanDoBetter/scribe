@@ -22,6 +22,7 @@ import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponen
 import Graph from "./Graph.ts";
 import Edge from "./Edge.ts";
 import NodeAPI from "./NodeAPI.ts";
+import Output from "./Output.ts";
 
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
@@ -42,7 +43,7 @@ interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> 
   }>;
   runFor: Workflow<{ ctx: Ctx; run: boolean; ran: boolean }>;
   init: Workflow<{ api: NodeAPI<Ctx, Meta>; initialize: boolean; initialized: boolean }>;
-  run: Workflow<{ api: NodeAPI<Ctx, Meta>; ctx: Ctx }>;
+  run: Workflow<{ api: NodeAPI<Ctx, Meta>; ctx: Ctx; output: Output<Ctx> }>;
   destroy: Workflow<{ api: NodeAPI<Ctx, Meta>; destroy: boolean; destroyed: boolean }>;
 }
 
@@ -249,8 +250,28 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
             "Node has already been run. If this is intentional, then set `run` to `false` in the `runFor` operation context.",
           );
         } else if (opCtx.run) {
-          await this.op("run", { api: this.api, ctx });
+          const runCtx: { api: NodeAPI<Ctx, Meta>; ctx: Ctx; output: Output<Ctx> } = {
+            api: this.api,
+            ctx,
+            output: new Output(this),
+          };
+          await this.op("run", runCtx);
           opCtx.ran = true;
+
+          const { output } = runCtx;
+          // Auto-flush the output if it has not been flushed yet.
+          if (!output.flushed && output.autoFlush && output.size) {
+            try {
+              await output.flush(ctx);
+            } catch (err) {
+              const aggegrateError = new AggregateError(
+                [err],
+                "Failed to flush output",
+              );
+              this.dispatchEvent(new SharedErrorEvent(aggegrateError));
+              throw aggegrateError;
+            }
+          }
         }
       });
     } catch (err) {
