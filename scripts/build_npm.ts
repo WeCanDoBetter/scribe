@@ -15,6 +15,13 @@ await build({
     description: "Scribe is an innovative context-aware workflow orchestrator.",
     author: "We Can Do Better (https://www.wcdb.life)",
     license: "GPLv3",
+    contributors: [
+      {
+        name: "Michiel van der Velde",
+        email: "michiel@wcdb.life",
+        url: "https://www.wcdb.life",
+      },
+    ],
     repository: {
       type: "git",
       url: "git+https://github.com/WeCanDoBetter/scribe.git",
