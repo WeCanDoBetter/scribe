@@ -127,4 +127,8 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends Sha
       throw aggegrateError;
     }
   }
+
+  [Symbol.iterator](): Iterator<Workflow<Ctx>> {
+    return this.#workflows.values();
+  }
 }

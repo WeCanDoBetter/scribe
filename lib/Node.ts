@@ -495,4 +495,11 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     }
     this.#looping = false;
   }
+
+  /**
+   * Returns an iterator over the edges of this node.
+   */
+  [Symbol.iterator](): Iterator<Edge<Ctx, Metadata>> {
+    return this.edges.values();
+  }
 }

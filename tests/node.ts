@@ -20,10 +20,6 @@ import type { AnyRecord } from "../types.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Scribe from "../lib/Scribe.ts";
 
-interface MyCtx {
-  counter: number;
-}
-
 const scribe = new Scribe<AnyRecord>();
 
 Deno.test("node", async (t) => {

@@ -200,4 +200,11 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
       }
     });
   }
+
+  /**
+   * Returns an iterator over the nodes in this graph.
+   */
+  [Symbol.iterator](): IterableIterator<Node<Ctx, Metadata>> {
+    return this.#nodes.values();
+  }
 }
