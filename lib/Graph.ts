@@ -208,8 +208,8 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    */
   duplicate(options?: Partial<GraphOptions<Ctx, Meta>>): Graph<Ctx, Meta> {
     return new Graph({
-      name: this.name,
-      version: this.version,
+      name: options?.name ?? this.name,
+      version: options?.version ?? this.version,
       tags: [...this.tags],
       metadata: { ...this.metadata },
       nodes: options?.nodes ? [...options.nodes] : [...this.#nodes],

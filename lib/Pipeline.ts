@@ -135,8 +135,8 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends Sha
    */
   duplicate(options?: Partial<PipelineOptions<Ctx, Meta>>): Pipeline<Ctx, Meta> {
     return new Pipeline({
-      name: this.name,
-      version: this.version,
+      name: options?.name ?? this.name,
+      version: options?.version ?? this.version,
       tags: [...this.tags],
       metadata: { ...this.metadata },
       ...options ?? {},

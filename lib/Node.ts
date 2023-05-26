@@ -503,8 +503,8 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   duplicate(options?: Partial<NodeOptions<Ctx, Meta>>): Node<Ctx, Metadata> {
     return new Node({
-      name: this.name,
-      version: this.version,
+      name: options?.name ?? this.name,
+      version: options?.version ?? this.version,
       tags: [...this.tags],
       metadata: { ...this.metadata },
       concurrency: this.concurrency,
