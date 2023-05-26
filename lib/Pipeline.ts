@@ -128,6 +128,26 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends Sha
     }
   }
 
+  /**
+   * Creates a duplicate of this pipeline. The duplicate will have the same
+   * name, version, tags, metadata, and workflows.
+   * @param options The options to override.
+   */
+  duplicate(options?: Partial<PipelineOptions<Ctx, Meta>>): Pipeline<Ctx, Meta> {
+    return new Pipeline({
+      name: this.name,
+      version: this.version,
+      tags: [...this.tags],
+      metadata: { ...this.metadata },
+      ...options ?? {},
+      ops: {
+        ...this.ops,
+        ...options?.ops ?? {},
+      },
+      workflows: options?.workflows ? [...options.workflows] : [...this.#workflows],
+    });
+  }
+
   [Symbol.iterator](): Iterator<Workflow<Ctx>> {
     return this.#workflows.values();
   }

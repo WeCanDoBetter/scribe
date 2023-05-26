@@ -202,6 +202,27 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
   }
 
   /**
+   * Creates a duplicate of this graph. The duplicate will have the same
+   * name, version, tags, metadata, nodes, and edges.
+   * @param options The options to override.
+   */
+  duplicate(options?: Partial<GraphOptions<Ctx, Meta>>): Graph<Ctx, Meta> {
+    return new Graph({
+      name: this.name,
+      version: this.version,
+      tags: [...this.tags],
+      metadata: { ...this.metadata },
+      nodes: options?.nodes ? [...options.nodes] : [...this.#nodes],
+      edges: options?.edges ? [...options.edges] : [...this.#edges],
+      ...options ?? {},
+      ops: {
+        ...this.ops,
+        ...options?.ops ?? {},
+      },
+    });
+  }
+
+  /**
    * Returns an iterator over the nodes in this graph.
    */
   [Symbol.iterator](): IterableIterator<Node<Ctx, Metadata>> {

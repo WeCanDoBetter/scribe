@@ -17,7 +17,7 @@
  */
 
 import type { AnyRecord } from "../types.ts";
-import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Scribe from "../lib/Scribe.ts";
 
 const scribe = new Scribe<AnyRecord>();
@@ -67,5 +67,17 @@ Deno.test("node", async (t) => {
 
   await t.step("should throw an error when destroying and not initialized", async () => {
     await assertRejects(() => node.destroy(), "Cannot destroy uninitialized node");
+  });
+
+  await t.step("should duplicate", () => {
+    const node2 = node.duplicate();
+
+    assertEquals(node2.name, "test");
+    assertEquals(node2.version, "1.0.0");
+    assertEquals(node2.tags, ["test"]);
+    assertEquals(node2.metadata, { key: "value" });
+
+    assertNotEquals(node, node2);
+    assertNotEquals(node.id, node2.id);
   });
 });

@@ -497,6 +497,26 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   }
 
   /**
+   * Creates a duplicate of this node. The duplicate will have the same
+   * name, version, tags, and metadata.
+   * @param options The options to override.
+   */
+  duplicate(options?: Partial<NodeOptions<Ctx, Meta>>): Node<Ctx, Metadata> {
+    return new Node({
+      name: this.name,
+      version: this.version,
+      tags: [...this.tags],
+      metadata: { ...this.metadata },
+      concurrency: this.concurrency,
+      ...options ?? {},
+      ops: {
+        ...this.ops,
+        ...options?.ops ?? {},
+      },
+    });
+  }
+
+  /**
    * Returns an iterator over the edges of this node.
    */
   [Symbol.iterator](): Iterator<Edge<Ctx, Metadata>> {
