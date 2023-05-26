@@ -3,6 +3,7 @@
 ![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
 [![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
 [![Deno](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml)
+[![Node.js](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
 ![GitHub issues](https://img.shields.io/github/issues/WeCanDoBetter/scribe)
 
