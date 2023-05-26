@@ -16,31 +16,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import type { AnyRecord, Metadata } from "../types.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
-import Graph from "../lib/Graph.ts";
-import { AnyRecord, Metadata } from "../types.ts";
 import { runWorkflow } from "../util.ts";
-import { Edge, Node } from "../mod.ts";
+import Edge from "../lib/Edge.ts";
+import Scribe from "../lib/Scribe.ts";
 
-function noopTask() {
-  return async (_ctx: AnyRecord, next: () => Promise<void>) => {
-    await next();
-  };
-}
+const scribe = new Scribe<AnyRecord>();
 
 Deno.test("graph", async (t) => {
-  const graph = new Graph<AnyRecord, Metadata>({
+  const graph = await scribe.createGraph({
     name: "test",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
-    ops: {
-      addNode: noopTask(),
-      addEdge: noopTask(),
-      removeNode: noopTask(),
-      removeEdge: noopTask(),
-      runFor: noopTask(),
-    },
   });
 
   await t.step("should have the correct name", () => {
@@ -68,21 +57,11 @@ Deno.test("graph", async (t) => {
     assertRejects(() => runWorkflow(graph, ctx), AggregateError, "Failed to run graph");
   });
 
-  const node1 = new Node<AnyRecord, Metadata>({
+  const node1 = await scribe.createNode({
     name: "node1",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
-    ops: {
-      addEdge: noopTask(),
-      removeEdge: noopTask(),
-      incoming: noopTask(),
-      outgoing: noopTask(),
-      runFor: noopTask(),
-      init: noopTask(),
-      run: noopTask(),
-      destroy: noopTask(),
-    },
   });
 
   await t.step("should add a node", async () => {
@@ -91,18 +70,13 @@ Deno.test("graph", async (t) => {
     assertEquals(graph.nodes.has(node1), true);
   });
 
-  const node2 = new Node<AnyRecord, Metadata>({
+  const node2 = await scribe.createNode({
     name: "node2",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
+    // @ts-ignore TODO: ops should all be optional
     ops: {
-      addEdge: noopTask(),
-      removeEdge: noopTask(),
-      incoming: noopTask(),
-      outgoing: noopTask(),
-      runFor: noopTask(),
-      init: noopTask(),
       run: (c, next) => {
         const { output } = c;
         output.queue([...node1.edges.values()][0]);
@@ -111,7 +85,6 @@ Deno.test("graph", async (t) => {
         // Rewrite everything to use the output
         return next();
       },
-      destroy: noopTask(),
     },
   });
 

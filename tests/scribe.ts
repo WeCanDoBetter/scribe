@@ -18,6 +18,7 @@
 
 import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Scribe from "../lib/Scribe.ts";
+import Node from "../lib/Node.ts";
 
 Deno.test("scribe", async (t) => {
   let scribe: Scribe<any> | undefined = undefined;
@@ -31,8 +32,21 @@ Deno.test("scribe", async (t) => {
   });
 
   await t.step("should add and find a pipeline", async () => {
-    await scribe!.createPipeline({});
+    await scribe!.createPipeline({ name: "test-pipeline" });
     assertEquals(scribe!.find().length, 1);
+  });
+
+  await t.step("should find a named pipeline with find()", () => {
+    assertEquals(scribe!.find((w) => w.name === "test-pipeline").length, 1);
+  });
+
+  await t.step("should find a named pipeline with findOne()", () => {
+    const p = scribe!.findOne((w) => w.name === "test-pipeline");
+    assertEquals(p?.name, "test-pipeline");
+  });
+
+  await t.step("should find a named pipeline with has()", () => {
+    assertEquals(scribe!.has((w) => w.name === "test-pipeline"), true);
   });
 
   await t.step("should add and find a graph", async () => {
@@ -47,5 +61,16 @@ Deno.test("scribe", async (t) => {
       },
     );
     assertEquals(scribe!.find().length, 3);
+  });
+
+  await t.step("should create a node", async () => {
+    const node = await scribe!.createNode({});
+    assertEquals(node instanceof Node, true);
+  });
+
+  await t.step("should remove a workflow", () => {
+    const num = scribe!.remove((w) => scribe!.find()[0] === w);
+    assertEquals(num, 1);
+    assertEquals(scribe!.find().length, 2);
   });
 });

@@ -16,46 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata } from "../types.ts";
+import type { AnyRecord } from "../types.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
-import Node from "../lib/Node.ts";
+import Scribe from "../lib/Scribe.ts";
 
 interface MyCtx {
   counter: number;
 }
 
+const scribe = new Scribe<AnyRecord>();
+
 Deno.test("node", async (t) => {
-  const node = new Node<MyCtx, Metadata>({
+  const node = await scribe.createNode({
     name: "test",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
-    ops: {
-      addEdge: async (_ctx, next) => {
-        await next();
-      },
-      removeEdge: async (_ctx, next) => {
-        await next();
-      },
-      incoming: async (_ctx, next) => {
-        await next();
-      },
-      outgoing: async (_ctx, next) => {
-        await next();
-      },
-      runFor: async (_ctx, next) => {
-        await next();
-      },
-      init: async (_ctx, next) => {
-        await next();
-      },
-      run: async (_ctx, next) => {
-        await next();
-      },
-      destroy: async (_ctx, next) => {
-        await next();
-      },
-    },
   });
 
   await t.step("should have the correct name", () => {

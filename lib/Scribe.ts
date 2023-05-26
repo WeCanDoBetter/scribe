@@ -48,6 +48,8 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
    * or extended by adding or replacing the operations.
    */
   static readonly defaultOps = {
+    /** The default operations for a Scribe instance. */
+    scribe: createDefaultScribeOps(),
     /** The default operations for a node. */
     node: createDefaultNodeOps(),
     /** The default operations for a pipeline. */
@@ -65,7 +67,7 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
     super({
       ...options ?? {},
       ops: {
-        ...createDefaultScribeOps(),
+        ...Scribe.defaultOps.scribe,
         ...options?.ops ?? {},
       },
     });

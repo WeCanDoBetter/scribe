@@ -16,29 +16,23 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata } from "../types.ts";
+import type { AnyRecord } from "../types.ts";
 import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
-import Pipeline from "../lib/Pipeline.ts";
 import { runWorkflow } from "../util.ts";
+import Scribe from "../lib/Scribe.ts";
 
 interface MyCtx {
   counter: number;
 }
 
+const scribe = new Scribe<AnyRecord>();
+
 Deno.test("pipeline", async (t) => {
-  const pipeline = new Pipeline<MyCtx, Metadata>({
+  const pipeline = await scribe.createPipeline({
     name: "test",
     version: "1.0.0",
     tags: ["test"],
     metadata: { key: "value" },
-    ops: {
-      push: async (_ctx, next) => {
-        await next();
-      },
-      runFor: async (_ctx, next) => {
-        await next();
-      },
-    },
   });
 
   await t.step("should have the correct name", () => {
