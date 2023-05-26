@@ -412,7 +412,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     } catch (err) {
       this.#initialized = false;
       this.#corrupted = true;
-      console.log(`Corrupted bool: ${this.#corrupted}`);
       const aggegrateError = new AggregateError(
         [err],
         "Failed to initialize node",

@@ -2,6 +2,7 @@
   "deno.enablePaths": [
     "./lib",
     "./tests",
+    "./scripts",
     "./mod.ts",
     "./type-guards.ts",
     "./types.ts",

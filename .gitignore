@@ -1,2 +1,5 @@
 # Docusaurus build folder
-/docs
+/docs/build
+
+# dnt npm directory
+/npm
