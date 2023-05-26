@@ -21,6 +21,7 @@ import type { SharedOptions } from "./SharedComponent.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
 import Graph from "./Graph.ts";
 import Edge from "./Edge.ts";
+import NodeAPI from "./NodeAPI.ts";
 
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
@@ -50,21 +51,6 @@ export interface NodeOptions<Ctx, Meta extends Metadata> extends SharedOptions<O
   readonly edges?: Edge<Ctx, Metadata>[];
   /** The maximum number of contexts that can be active for this node. */
   readonly concurrency?: number;
-}
-
-export class NodeAPI<Ctx, Meta extends Metadata> {
-  #node: Node<Ctx, Meta>;
-
-  constructor(node: Node<Ctx, Meta>) {
-    this.#node = node;
-  }
-
-  /**
-   * The node this API is for.
-   */
-  get node(): Node<Ctx, Meta> {
-    return this.#node;
-  }
 }
 
 export class NodeInitializedEvent<Ctx, Meta extends Metadata = Metadata> extends SharedEvent {

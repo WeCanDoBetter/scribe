@@ -20,7 +20,7 @@ import { assertEquals, assertRejects } from "https://deno.land/std@0.177.0/testi
 import Graph from "../lib/Graph.ts";
 import { AnyRecord, Metadata } from "../types.ts";
 import { runWorkflow } from "../util.ts";
-import { Node } from "../mod.ts";
+import { Edge, Node } from "../mod.ts";
 
 function noopTask() {
   return async (_ctx: AnyRecord, next: () => Promise<void>) => {
@@ -103,7 +103,15 @@ Deno.test("graph", async (t) => {
       outgoing: noopTask(),
       runFor: noopTask(),
       init: noopTask(),
-      run: noopTask(),
+      run: (c, next) => {
+        const { api } = c;
+        const o = api.output();
+        o.queue([...node1.edges.values()][0]);
+        // TODO: Actually write to the output
+        // We need at least two edges, so 3 nodes for this to work
+        // Rewrite everything to use the output
+        return next();
+      },
       destroy: noopTask(),
     },
   });
@@ -149,15 +157,17 @@ Deno.test("graph", async (t) => {
     assertEquals(ctx.run, true);
   });
 
+  let edge: Edge<AnyRecord, Metadata> | undefined;
+
   await t.step("should throw an error writing to edge when written", async () => {
-    const edge = node1.getEdges()[0];
+    edge = node1.getEdges()[0];
     edge.ops.write = (ctx, next) => {
       ctx.written = true;
       return next();
     };
 
     await assertRejects(
-      () => edge.write({}),
+      () => edge!.write({}),
       "Edge has already been written. If this is intentional, then set `write` to `false` in the `write` operation.",
     );
   });
