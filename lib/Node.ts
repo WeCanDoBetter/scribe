@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata, ReadonlyWeakSet, Workflow } from "../types.ts";
+import type { Metadata, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
 import Graph from "./Graph.ts";
@@ -92,8 +92,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   #looping = false;
   /** The edges that are connected to this node. */
   #edges: Set<Edge<Ctx, Metadata>>;
-  /** The contexts that are currently active for this node. */
-  #activeContexts = new WeakSet<any>();
   /** The contexts that are queued for this node. */
   #queue: Ctx[] = [];
 
@@ -130,16 +128,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   get edges(): ReadonlySet<Edge<Ctx, Metadata>> {
     return this.#edges;
-  }
-
-  /**
-   * The contexts that are currently active for this node. Note that this is a
-   * weak set, so the contexts will be garbage collected if they are not
-   * referenced anywhere else. Also, it is not possible to iterate over the
-   * contexts in this set.
-   */
-  get activeContexts(): ReadonlyWeakSet<Ctx> {
-    return this.#activeContexts;
   }
 
   /**
@@ -250,16 +238,17 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
             "Node has already been run. If this is intentional, then set `run` to `false` in the `runFor` operation context.",
           );
         } else if (opCtx.run) {
+          const output = new Output<Ctx>(this);
           const runCtx: { api: NodeAPI<Ctx, Meta>; ctx: Ctx; output: Output<Ctx> } = {
             api: this.api,
             ctx,
-            output: new Output(this),
+            output,
           };
+
           await this.op("run", runCtx);
           opCtx.ran = true;
 
-          const { output } = runCtx;
-          // Auto-flush the output if it has not been flushed yet.
+          // Auto-flush the output if enabled and has not been flushed yet.
           if (!output.flushed && output.autoFlush && output.size) {
             try {
               await output.flush(ctx);
@@ -318,7 +307,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
-      this.#activeContexts.add(ctx);
       this.#queue.push(ctx);
       opCtx.queued = true;
 
@@ -366,7 +354,6 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         );
       }
 
-      this.#activeContexts.delete(ctx);
       await edge.write(ctx);
       opCtx.passed = true;
     });
