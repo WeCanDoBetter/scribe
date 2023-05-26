@@ -210,8 +210,8 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
     return new Graph({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: [...this.tags],
-      metadata: { ...this.metadata },
+      tags: options?.tags ? [...options.tags] : [...this.tags],
+      metadata: options?.metadata ? { ...options.metadata } : { ...this.metadata },
       nodes: options?.nodes ? [...options.nodes] : [...this.#nodes],
       edges: options?.edges ? [...options.edges] : [...this.#edges],
       ...options ?? {},

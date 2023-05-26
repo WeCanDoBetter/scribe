@@ -137,14 +137,14 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends Sha
     return new Pipeline({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: [...this.tags],
-      metadata: { ...this.metadata },
+      tags: options?.tags ? [...options.tags] : [...this.tags],
+      metadata: options?.metadata ? { ...options.metadata } : { ...this.metadata },
+      workflows: options?.workflows ? [...options.workflows] : [...this.#workflows],
       ...options ?? {},
       ops: {
         ...this.ops,
         ...options?.ops ?? {},
       },
-      workflows: options?.workflows ? [...options.workflows] : [...this.#workflows],
     });
   }
 

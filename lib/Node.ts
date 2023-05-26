@@ -505,8 +505,8 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
     return new Node({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: [...this.tags],
-      metadata: { ...this.metadata },
+      tags: options?.tags ? [...this.tags, ...options.tags] : [...this.tags],
+      metadata: options?.metadata ? { ...this.metadata, ...options.metadata } : { ...this.metadata },
       concurrency: this.concurrency,
       ...options ?? {},
       ops: {
