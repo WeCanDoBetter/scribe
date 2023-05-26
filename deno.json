@@ -9,7 +9,8 @@
       "tests/task.ts",
       "tests/graph.ts",
       "tests/node.ts",
-      "tests/pipeline.ts"
+      "tests/pipeline.ts",
+      "tests/scribe.ts"
     ]
   },
   "fmt": {
