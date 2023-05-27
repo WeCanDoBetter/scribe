@@ -76,3 +76,9 @@ export type ReadonlyWeakSet<T> = {
  * @template W The workflow type.
  */
 export type WorkflowCtx<W extends Workflow<any>> = W extends Workflow<infer Ctx> ? Ctx : never;
+
+/**
+ * Makes the `ops` property of the type optional.
+ * @template T The type to make partial.
+ */
+export type PartialOps<T extends { ops: Record<string, Workflow<any>> }> = Omit<T, "ops"> & Partial<Pick<T, "ops">>;
