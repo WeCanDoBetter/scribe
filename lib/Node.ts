@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata, Workflow } from "../types.ts";
+import type { Metadata, ReadonlyWeakSet, Workflow } from "../types.ts";
 import type { SharedOptions } from "./SharedComponent.ts";
 import SharedComponent, { SharedErrorEvent, SharedEvent } from "./SharedComponent.ts";
 import Graph from "./Graph.ts";
@@ -94,6 +94,10 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   #edges: Set<Edge<Ctx, Metadata>>;
   /** The contexts that are queued for this node. */
   #queue: Ctx[] = [];
+  /** The contexts that are active for this node. */
+  #activeContexts = new Set<Ctx>();
+  /** The contexts that have been seen by this node. */
+  #seenContexts = new WeakSet<any>();
 
   constructor(options: NodeOptions<Ctx, Meta>) {
     super(options);
@@ -128,6 +132,27 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   get edges(): ReadonlySet<Edge<Ctx, Metadata>> {
     return this.#edges;
+  }
+
+  /**
+   * The contexts that are queued for this node.
+   */
+  get queue(): ReadonlyArray<Ctx> {
+    return this.#queue;
+  }
+
+  /**
+   * The contexts that are active for this node.
+   */
+  get activeContexts(): ReadonlySet<Ctx> {
+    return this.#activeContexts;
+  }
+
+  /**
+   * The contexts that have been seen by this node.
+   */
+  get seenContexts(): ReadonlyWeakSet<Ctx> {
+    return this.#seenContexts;
   }
 
   /**
@@ -230,6 +255,8 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         throw new Error("Cannot run uninitialized node");
       }
 
+      this.#activeContexts.add(ctx);
+      this.#seenContexts.add(ctx);
       const opCtx = { ctx, run: true, ran: false };
 
       await this.op("runFor", opCtx, async () => {
@@ -246,6 +273,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
           };
 
           await this.op("run", runCtx);
+          this.#activeContexts.delete(ctx);
           opCtx.ran = true;
 
           // Auto-flush the output if enabled and has not been flushed yet.
@@ -264,6 +292,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
         }
       });
     } catch (err) {
+      this.#activeContexts.delete(ctx);
       const aggegrateError = new AggregateError(
         [err],
         "Failed to run node for context",

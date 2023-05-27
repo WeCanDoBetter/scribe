@@ -61,3 +61,12 @@ export type Metadata = AnyRecord;
  * @template K The keys of the type to make partial.
  */
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * A reaadonly version of WeakSet.
+ * @template T The type of the values in the set.
+ */
+export type ReadonlyWeakSet<T> = {
+  /** Checks whether the set has a value. */
+  has(value: T): boolean;
+};
