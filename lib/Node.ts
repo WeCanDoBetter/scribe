@@ -25,7 +25,7 @@ import NodeAPI from "./NodeAPI.ts";
 import Output from "./Output.ts";
 import { duplicateWorkflow } from "../util.ts";
 
-interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
+export interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
   removeEdge: Workflow<{ edge: Edge<Ctx, Metadata>; remove: boolean; removed: boolean }>;
   incoming: Workflow<{

@@ -17,8 +17,9 @@
  */
 
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
-import { AnyRecord, Metadata, PartialBy, Workflow } from "../types.ts";
+import { AnyRecord, Metadata, PartialBy, Workflow, WorkflowCtx } from "../types.ts";
 import {
+  createDefaultEdgeOps,
   createDefaultGraphOps,
   createDefaultNodeOps,
   createDefaultPipelineOps,
@@ -28,12 +29,12 @@ import Graph, { GraphOptions } from "./Graph.ts";
 import Node, { NodeOptions } from "./Node.ts";
 import Pipeline, { PipelineOptions } from "./Pipeline.ts";
 
-interface Ops<Ctx> extends Record<string, Workflow<any>> {
+export interface Ops<Ctx> extends Record<string, Workflow<any>> {
   createPipeline: Workflow<
     { options: PartialBy<PipelineOptions<Ctx, AnyRecord>, "ops">; pipeline?: Pipeline<Ctx, Metadata> }
   >;
-  createGraph: Workflow<{ options: PartialBy<GraphOptions<Ctx, AnyRecord>, "ops"> }>;
-  createNode: Workflow<{ options: PartialBy<NodeOptions<Ctx, AnyRecord>, "ops"> }>;
+  createGraph: Workflow<{ options: PartialBy<GraphOptions<Ctx, AnyRecord>, "ops">; graph?: Graph<Ctx, Metadata> }>;
+  createNode: Workflow<{ options: PartialBy<NodeOptions<Ctx, AnyRecord>, "ops">; node?: Node<Ctx, Metadata> }>;
 }
 
 /**
@@ -50,12 +51,14 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
   static readonly defaultOps = {
     /** The default operations for a Scribe instance. */
     scribe: createDefaultScribeOps(),
-    /** The default operations for a node. */
-    node: createDefaultNodeOps(),
     /** The default operations for a pipeline. */
     pipeline: createDefaultPipelineOps(),
     /** The default operations for a graph. */
     graph: createDefaultGraphOps(),
+    /** The default operations for a node. */
+    node: createDefaultNodeOps(),
+    /** The default operations for an edge. */
+    edge: createDefaultEdgeOps(),
   };
 
   /** The workflows that are used by this Scribe. */
@@ -116,10 +119,7 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
    * @returns The created pipeline.
    */
   async createPipeline(options?: PartialBy<PipelineOptions<Ctx, Metadata>, "ops">): Promise<Pipeline<Ctx, Metadata>> {
-    const ctx: {
-      options: PartialBy<PipelineOptions<Ctx, Metadata>, "ops">;
-      pipeline?: Pipeline<Ctx, Metadata>;
-    } = {
+    const ctx: WorkflowCtx<Ops<Ctx>["createPipeline"]> = {
       options: options ?? {},
     };
 
@@ -147,7 +147,7 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
    * @returns The created graph.
    */
   async createGraph(options?: PartialBy<GraphOptions<Ctx, Metadata>, "ops">): Promise<Graph<Ctx, Metadata>> {
-    const ctx: { options: PartialBy<GraphOptions<Ctx, Metadata>, "ops">; graph?: Graph<Ctx, Metadata> } = {
+    const ctx: WorkflowCtx<Ops<Ctx>["createGraph"]> = {
       options: options ?? {},
     };
 
@@ -175,7 +175,7 @@ export default class Scribe<Ctx> extends SharedComponent<Ops<Ctx>, Metadata, any
    * @returns The created node.
    */
   async createNode(options?: PartialBy<NodeOptions<Ctx, Metadata>, "ops">): Promise<Node<Ctx, Metadata>> {
-    const ctx: { options: PartialBy<NodeOptions<Ctx, Metadata>, "ops">; node?: Node<Ctx, Metadata> } = {
+    const ctx: WorkflowCtx<Ops<Ctx>["createNode"]> = {
       options: options ?? {},
     };
 

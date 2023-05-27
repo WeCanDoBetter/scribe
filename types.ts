@@ -70,3 +70,9 @@ export type ReadonlyWeakSet<T> = {
   /** Checks whether the set has a value. */
   has(value: T): boolean;
 };
+
+/**
+ * Extracts the context type from a workflow.
+ * @template W The workflow type.
+ */
+export type WorkflowCtx<W extends Workflow<any>> = W extends Workflow<infer Ctx> ? Ctx : never;

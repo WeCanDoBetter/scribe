@@ -17,7 +17,13 @@
  */
 
 import type { Tail, Task, Workflow } from "./types.ts";
+import type { Ops as ScribeOps } from "./lib/Scribe.ts";
+import type { Ops as PipelineOps } from "./lib/Pipeline.ts";
+import type { Ops as GraphOps } from "./lib/Graph.ts";
+import type { Ops as NodeOps } from "./lib/Node.ts";
+import type { Ops as EdgeOps } from "./lib/Edge.ts";
 import { isGraph, isPipeline, isTask } from "./type-guards.ts";
+import { Metadata } from "./mod.ts";
 
 /**
  * A promise that resolves immediately.
@@ -78,7 +84,7 @@ export function duplicateWorkflow<Ctx>(workflow: Workflow<Ctx>, deep = false) {
  * The default operations for a Scribe instance. These operations do nothing, and
  * can be overridden by the user if desired.
  */
-export function createDefaultScribeOps() {
+export function createDefaultScribeOps(): ScribeOps<any> {
   return {
     createPipeline: noopTask,
     createGraph: noopTask,
@@ -87,10 +93,35 @@ export function createDefaultScribeOps() {
 }
 
 /**
+ * The default operations for a pipeline instance. These operations do nothing,
+ * and can be overridden by the user if desired.
+ */
+export function createDefaultPipelineOps(): PipelineOps<any> {
+  return {
+    push: noopTask,
+    runFor: noopTask,
+  };
+}
+
+/**
+ * The default operations for a graph instance. These operations do nothing, and
+ * can be overridden by the user if desired.
+ */
+export function createDefaultGraphOps(): GraphOps<any> {
+  return {
+    addNode: noopTask,
+    addEdge: noopTask,
+    removeNode: noopTask,
+    removeEdge: noopTask,
+    runFor: noopTask,
+  };
+}
+
+/**
  * The default operations for a node instance. These operations do nothing, and
  * can be overridden by the user if desired.
  */
-export function createDefaultNodeOps() {
+export function createDefaultNodeOps(): NodeOps<any, Metadata> {
   return {
     addEdge: noopTask,
     removeEdge: noopTask,
@@ -104,26 +135,11 @@ export function createDefaultNodeOps() {
 }
 
 /**
- * The default operations for a pipeline instance. These operations do nothing,
- * and can be overridden by the user if desired.
- */
-export function createDefaultPipelineOps() {
-  return {
-    push: noopTask,
-    runFor: noopTask,
-  };
-}
-
-/**
- * The default operations for a graph instance. These operations do nothing, and
+ * The default operations for a node instance. These operations do nothing, and
  * can be overridden by the user if desired.
  */
-export function createDefaultGraphOps() {
+export function createDefaultEdgeOps(): EdgeOps<any> {
   return {
-    addNode: noopTask,
-    addEdge: noopTask,
-    removeNode: noopTask,
-    removeEdge: noopTask,
-    runFor: noopTask,
+    write: noopTask,
   };
 }

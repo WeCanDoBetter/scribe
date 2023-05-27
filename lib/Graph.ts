@@ -16,19 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Metadata, Workflow } from "../types.ts";
+import type { Metadata, Workflow, WorkflowCtx } from "../types.ts";
 import type { Ops as EdgeOps } from "./Edge.ts";
-import { duplicateWorkflow, noopTask } from "../util.ts";
+import { duplicateWorkflow } from "../util.ts";
 import Edge from "./Edge.ts";
 import Node from "./Node.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
+import { Scribe } from "../mod.ts";
 
-interface Ops<Ctx> extends Record<string, Workflow<any>> {
+export interface Ops<Ctx> extends Record<string, Workflow<any>> {
   addNode: Workflow<{ node: Node<Ctx, Metadata>; add: boolean; added: boolean }>;
-  addEdge: Workflow<{ source: Node<Ctx, Metadata>; target: Node<Ctx, Metadata>; add: boolean; added: boolean }>;
+  addEdge: Workflow<
+    { source: Node<Ctx, Metadata>; target: Node<Ctx, Metadata>; add: boolean; added: boolean; ops?: EdgeOps<Ctx> }
+  >;
   removeNode: Workflow<{ node: Node<Ctx, Metadata>; remove: boolean; removed: boolean }>;
   removeEdge: Workflow<{ edge: Edge<Ctx, Metadata>; remove: boolean; removed: boolean }>;
-  runFor: Workflow<{ ctx: Ctx }>;
+  runFor: Workflow<{ ctx: Ctx; targets?: Node<Ctx, Metadata>[] }>;
 }
 
 export interface GraphOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx>, Meta> {
@@ -73,7 +76,11 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param node The node to add.
    */
   addNode(node: Node<Ctx, Metadata>): Promise<void> {
-    const opCtx = { node, add: true, added: false };
+    const opCtx: WorkflowCtx<Ops<Ctx>["addNode"]> = {
+      node,
+      add: true,
+      added: false,
+    };
 
     return this.op("addNode", opCtx, () => {
       if (opCtx.add) {
@@ -91,21 +98,19 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param target The target node of the edge.
    */
   addEdge(source: Node<Ctx, Metadata>, target: Node<Ctx, Metadata>): Promise<void> {
-    const opCtx: {
-      source: Node<Ctx, Metadata>;
-      target: Node<Ctx, Metadata>;
-      add: boolean;
-      added: boolean;
-      ops?: {
-        write?: Workflow<any>;
-      };
-    } = { source, target, add: true, added: false };
+    const opCtx: WorkflowCtx<Ops<Ctx>["addEdge"]> = {
+      source,
+      target,
+      add: true,
+      added: false,
+    };
 
     return this.op("addEdge", opCtx, async () => {
       if (opCtx.add) {
         const edge = new Edge(source, target, {
           ops: {
-            write: opCtx.ops?.write ?? noopTask,
+            ...Scribe.defaultOps.edge,
+            ...opCtx.ops ?? {},
           },
         });
         await source.addEdge(edge);
@@ -121,7 +126,11 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * @param node The node to remove.
    */
   removeNode(node: Node<Ctx, Metadata>): Promise<void> {
-    const opCtx = { node, remove: true, removed: false };
+    const opCtx: WorkflowCtx<Ops<Ctx>["removeNode"]> = {
+      node,
+      remove: true,
+      removed: false,
+    };
 
     return this.op("removeNode", opCtx, async () => {
       if (opCtx.remove) {
@@ -161,7 +170,7 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    */
   runFor(ctx: Ctx): Promise<void> {
     const edges = [...this.#edges];
-    const opCtx = {
+    const opCtx: WorkflowCtx<Ops<Ctx>["runFor"]> = {
       ctx,
       // Get all nodes that are not targets of any edges, because those are the
       // nodes that can be run first. This is because the nodes that are targets
@@ -173,7 +182,7 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
 
     return this.op("runFor", opCtx, async () => {
       try {
-        if (!opCtx.targets.length) {
+        if (!opCtx.targets?.length) {
           throw new Error("Graph has no input nodes");
         }
 

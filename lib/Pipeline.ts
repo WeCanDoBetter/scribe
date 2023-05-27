@@ -20,7 +20,7 @@ import type { Metadata, Next, Tail, Workflow } from "../types.ts";
 import { duplicateWorkflow, runWorkflow } from "../util.ts";
 import SharedComponent, { SharedErrorEvent, SharedOptions } from "./SharedComponent.ts";
 
-interface Ops<Ctx> extends Record<string, Workflow<any>> {
+export interface Ops<Ctx> extends Record<string, Workflow<any>> {
   push: Workflow<{ push: boolean; pushed: boolean; workflow: Workflow<Ctx> }>;
   runFor: Workflow<{ run: boolean; ran: boolean; ctx: Ctx }>;
 }
