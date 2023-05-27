@@ -17,7 +17,7 @@
  */
 
 import type { AnyRecord, Metadata } from "../types.ts";
-import { assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assert, assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import { runWorkflow } from "../util.ts";
 import Edge from "../lib/Edge.ts";
 import Scribe from "../lib/Scribe.ts";
@@ -155,7 +155,7 @@ Deno.test("graph", async (t) => {
     assertEquals(graph.nodes.has(node1), false);
   });
 
-  await t.step("should duplicate", () => {
+  await t.step("should shallow duplicate", () => {
     const graph2 = graph.duplicate();
 
     assertEquals(graph2.name, "test");
@@ -165,5 +165,21 @@ Deno.test("graph", async (t) => {
 
     assertNotEquals(graph, graph2);
     assertNotEquals(graph.id, graph2.id);
+
+    assert([...graph.nodes.keys()][0] === [...graph2.nodes.keys()][0]);
+  });
+
+  await t.step("should deep duplicate", () => {
+    const graph2 = graph.duplicate({ deep: true });
+
+    assertEquals(graph2.name, "test");
+    assertEquals(graph2.version, "1.0.0");
+    assertEquals(graph2.tags, ["test"]);
+    assertEquals(graph2.metadata, { key: "value" });
+
+    assertNotEquals(graph, graph2);
+    assertNotEquals(graph.id, graph2.id);
+
+    assert([...graph.nodes.keys()][0] !== [...graph2.nodes.keys()][0]);
   });
 });

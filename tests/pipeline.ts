@@ -17,7 +17,7 @@
  */
 
 import type { AnyRecord } from "../types.ts";
-import { assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assert, assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import { runWorkflow } from "../util.ts";
 import Scribe from "../lib/Scribe.ts";
 
@@ -90,7 +90,7 @@ Deno.test("pipeline", async (t) => {
     assertEquals(ctx.counter, 4);
   });
 
-  await t.step("should duplicate", () => {
+  await t.step("should shallow duplicate", () => {
     const pipeline2 = pipeline.duplicate();
 
     assertEquals(pipeline.name, "test");
@@ -100,6 +100,22 @@ Deno.test("pipeline", async (t) => {
 
     assertNotEquals(pipeline, pipeline2);
     assertNotEquals(pipeline.id, pipeline2.id);
+
+    assert(pipeline.workflows !== pipeline2.workflows);
+  });
+
+  await t.step("should deep duplicate", () => {
+    const pipeline2 = pipeline.duplicate({ deep: true });
+
+    assertEquals(pipeline.name, "test");
+    assertEquals(pipeline.version, "1.0.0");
+    assertEquals(pipeline.tags, ["test"]);
+    assertEquals(pipeline.metadata, { key: "value" });
+
+    assertNotEquals(pipeline, pipeline2);
+    assertNotEquals(pipeline.id, pipeline2.id);
+
+    assert(pipeline.workflows !== pipeline2.workflows);
   });
 
   await t.step("should throw an error when pushing empty workflows", () => {

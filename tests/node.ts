@@ -17,7 +17,7 @@
  */
 
 import type { AnyRecord } from "../types.ts";
-import { assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assert, assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.177.0/testing/asserts.ts";
 import Scribe from "../lib/Scribe.ts";
 
 const scribe = new Scribe<AnyRecord>();
@@ -69,7 +69,7 @@ Deno.test("node", async (t) => {
     await assertRejects(() => node.destroy(), "Cannot destroy uninitialized node");
   });
 
-  await t.step("should duplicate", () => {
+  await t.step("should shallow duplicate", () => {
     const node2 = node.duplicate();
 
     assertEquals(node2.name, "test");
@@ -79,5 +79,19 @@ Deno.test("node", async (t) => {
 
     assertNotEquals(node, node2);
     assertNotEquals(node.id, node2.id);
+  });
+
+  await t.step("should deep duplicate", () => {
+    const node2 = node.duplicate({ deep: true });
+
+    assertEquals(node2.name, "test");
+    assertEquals(node2.version, "1.0.0");
+    assertEquals(node2.tags, ["test"]);
+    assertEquals(node2.metadata, { key: "value" });
+
+    assertNotEquals(node, node2);
+    assertNotEquals(node.id, node2.id);
+
+    assert(node.ops !== node2.ops);
   });
 });
