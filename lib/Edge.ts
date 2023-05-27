@@ -24,7 +24,7 @@ import SharedComponent from "./SharedComponent.ts";
 /**
  * The operations that can be performed on an edge.
  */
-interface Ops<Ctx> extends Record<string, Workflow<any>> {
+export interface Ops<Ctx> extends Record<string, Workflow<any>> {
   write: Workflow<{ ctx: Ctx; written: boolean; write: boolean }>;
 }
 

@@ -17,7 +17,8 @@
  */
 
 import type { Metadata, Workflow } from "../types.ts";
-import { noopTask } from "../util.ts";
+import type { Ops as EdgeOps } from "./Edge.ts";
+import { duplicateWorkflow, noopTask } from "../util.ts";
 import Edge from "./Edge.ts";
 import Node from "./Node.ts";
 import SharedComponent, { SharedOptions } from "./SharedComponent.ts";
@@ -206,17 +207,41 @@ export default class Graph<Ctx, Meta extends Metadata = Metadata> extends Shared
    * name, version, tags, metadata, nodes, and edges.
    * @param options The options to override.
    */
-  duplicate(options?: Partial<GraphOptions<Ctx, Meta>>): Graph<Ctx, Meta> {
+  duplicate(options?: Partial<GraphOptions<Ctx, Meta> & { deep?: boolean }>): Graph<Ctx, Meta> {
+    const nodes = options?.deep ? [...this.#nodes].map((node) => node.duplicate()) : [...this.#nodes];
+    const edges = options?.deep
+      ? [...this.#edges].map((edge) => {
+        const source = nodes.find((node) => node.parent === edge.source);
+        const target = nodes.find((node) => node.parent === edge.target);
+
+        return new Edge(source!, target!, {
+          ops: {
+            ...options?.deep
+              ? Object.entries(edge.ops).reduce((ops, [key, op]) => {
+                ops[key] = duplicateWorkflow(op, options.deep);
+                return ops;
+              }, {} as EdgeOps<Ctx>)
+              : edge.ops,
+          },
+        });
+      })
+      : [...this.#edges];
+
     return new Graph({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: options?.tags ? [...options.tags] : [...this.tags],
-      metadata: options?.metadata ? { ...options.metadata } : { ...this.metadata },
-      nodes: options?.nodes ? [...options.nodes] : [...this.#nodes],
-      edges: options?.edges ? [...options.edges] : [...this.#edges],
+      tags: options?.tags ?? this.tags,
+      metadata: options?.metadata ?? this.metadata,
+      nodes,
+      edges,
       ...options ?? {},
       ops: {
-        ...this.ops,
+        ...options?.deep
+          ? Object.values(this.ops).reduce((ops, op) => {
+            ops[op.name] = duplicateWorkflow(op, options.deep);
+            return ops;
+          }, {} as Ops<Ctx>)
+          : this.ops,
         ...options?.ops ?? {},
       },
     });

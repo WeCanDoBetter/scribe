@@ -58,6 +58,23 @@ export async function runWorkflow<Ctx>(
 }
 
 /**
+ * Duplicates a workflow. If the workflow is a Task, it is returned as-is. If
+ * `deep` is true, the workflow is duplicated deeply. Otherwise, the workflow is
+ * duplicated shallowly.
+ * @param workflow The workflow to duplicate.
+ * @param deep Whether to duplicate the workflow deeply.
+ */
+export function duplicateWorkflow<Ctx>(workflow: Workflow<Ctx>, deep = false) {
+  if (isPipeline(workflow)) {
+    return workflow.duplicate({ deep });
+  } else if (isGraph(workflow)) {
+    return workflow.duplicate({ deep });
+  }
+
+  return workflow;
+}
+
+/**
  * The default operations for a Scribe instance. These operations do nothing, and
  * can be overridden by the user if desired.
  */

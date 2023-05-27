@@ -17,7 +17,7 @@
  */
 
 import type { Metadata, Next, Tail, Workflow } from "../types.ts";
-import { runWorkflow } from "../util.ts";
+import { duplicateWorkflow, runWorkflow } from "../util.ts";
 import SharedComponent, { SharedErrorEvent, SharedOptions } from "./SharedComponent.ts";
 
 interface Ops<Ctx> extends Record<string, Workflow<any>> {
@@ -133,16 +133,23 @@ export default class Pipeline<Ctx, Meta extends Metadata = Metadata> extends Sha
    * name, version, tags, metadata, and workflows.
    * @param options The options to override.
    */
-  duplicate(options?: Partial<PipelineOptions<Ctx, Meta>>): Pipeline<Ctx, Meta> {
+  duplicate(options?: Partial<PipelineOptions<Ctx, Meta> & { deep?: boolean }>): Pipeline<Ctx, Meta> {
     return new Pipeline({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: options?.tags ? [...options.tags] : [...this.tags],
-      metadata: options?.metadata ? { ...options.metadata } : { ...this.metadata },
-      workflows: options?.workflows ? [...options.workflows] : [...this.#workflows],
+      tags: options?.tags ?? this.tags,
+      metadata: options?.metadata ?? this.metadata,
+      workflows: options?.deep
+        ? this.#workflows.map((workflow) => duplicateWorkflow(workflow, options?.deep))
+        : this.#workflows,
       ...options ?? {},
       ops: {
-        ...this.ops,
+        ...options?.deep
+          ? Object.entries(this.ops).reduce((ops, [key, op]) => {
+            ops[key] = duplicateWorkflow(op, options.deep);
+            return ops;
+          }, {} as Ops<Ctx>)
+          : this.ops,
         ...options?.ops ?? {},
       },
     });

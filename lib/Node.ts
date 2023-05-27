@@ -23,6 +23,7 @@ import Graph from "./Graph.ts";
 import Edge from "./Edge.ts";
 import NodeAPI from "./NodeAPI.ts";
 import Output from "./Output.ts";
+import { duplicateWorkflow } from "../util.ts";
 
 interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> {
   addEdge: Workflow<{ edge: Edge<Ctx, Metadata>; add: boolean; added: boolean }>;
@@ -48,6 +49,8 @@ interface Ops<Ctx, Meta extends Metadata> extends Record<string, Workflow<any>> 
 }
 
 export interface NodeOptions<Ctx, Meta extends Metadata> extends SharedOptions<Ops<Ctx, Meta>, Meta> {
+  /** The parent node, if any. */
+  parent?: Node<Ctx, Metadata>;
   /** The edges that are connected to this node. */
   readonly edges?: Edge<Ctx, Metadata>[];
   /** The maximum number of contexts that can be active for this node. */
@@ -90,6 +93,8 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   #corrupted = false;
   /** Whether this node is looping. */
   #looping = false;
+  /** The parent node, if any. */
+  #parent?: Node<Ctx, Metadata>;
   /** The edges that are connected to this node. */
   #edges: Set<Edge<Ctx, Metadata>>;
   /** The contexts that are queued for this node. */
@@ -102,6 +107,7 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
   constructor(options: NodeOptions<Ctx, Meta>) {
     super(options);
     this.concurrency = options.concurrency;
+    this.#parent = options.parent;
     this.#edges = new Set(options.edges ? [...options.edges] : []);
 
     this.#init()
@@ -125,6 +131,20 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    */
   get corrupted(): boolean {
     return this.#corrupted;
+  }
+
+  /**
+   * The parent node, if any.
+   */
+  get parent(): Node<Ctx, Metadata> | undefined {
+    return this.#parent;
+  }
+
+  /**
+   * Whether this node is looping.
+   */
+  get looping(): boolean {
+    return this.#looping;
   }
 
   /**
@@ -529,17 +549,21 @@ export default class Node<Ctx, Meta extends Metadata> extends SharedComponent<Op
    * name, version, tags, and metadata.
    * @param options The options to override.
    */
-  duplicate(options?: Partial<NodeOptions<Ctx, Meta>>): Node<Ctx, Metadata> {
+  duplicate(options?: Partial<NodeOptions<Ctx, Meta> & { deep?: boolean }>): Node<Ctx, Metadata> {
     return new Node({
       name: options?.name ?? this.name,
       version: options?.version ?? this.version,
-      tags: options?.tags ? [...this.tags, ...options.tags] : [...this.tags],
-      metadata: options?.metadata ? { ...this.metadata, ...options.metadata } : { ...this.metadata },
+      tags: options?.tags ?? this.tags,
+      metadata: options?.metadata ?? this.metadata,
       concurrency: this.concurrency,
       ...options ?? {},
       ops: {
-        ...this.ops,
-        ...options?.ops ?? {},
+        ...options?.deep
+          ? Object.entries(this.ops).reduce((ops, [key, op]) => {
+            ops[key] = duplicateWorkflow(op, options.deep);
+            return ops;
+          }, {} as Ops<Ctx, Meta>)
+          : this.ops,
       },
     });
   }
