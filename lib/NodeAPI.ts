@@ -19,6 +19,11 @@
 import type { Metadata } from "../types.ts";
 import type Node from "./Node.ts";
 
+export interface Procedure<Value> {
+  name: string;
+  value: Value;
+}
+
 /**
  * The API which is available to the node core user operations.
  * @template Ctx The context type.
@@ -28,7 +33,53 @@ export default class NodeAPI<Ctx, Meta extends Metadata> {
   /** The node that this API belongs to. */
   readonly node: Node<Ctx, Meta>;
 
+  /** The procedures that are registered. */
+  #procedures = new Map<string, Procedure<any>>();
+
   constructor(node: Node<Ctx, Meta>) {
     this.node = node;
+  }
+
+  /**
+   * Registers a procedure. A procedure is a function or value that can be called by the node core user operations.
+   * @param name The name of the procedure.
+   * @param value The procedure.
+   */
+  register<Value>(name: string, value: Value): this;
+  /**
+   * Registers a procedure. A procedure is a function or value that can be called by the node core user operations.
+   * @param procedures The procedures to register.
+   */
+  register(...procedures: Procedure<any>[]): this;
+  /**
+   * Registers a procedure. A procedure is a function or value that can be called by the node core user operations.
+   * @param nameOrProcedures The name of the procedure or the procedures to register.
+   */
+  register(...nameOrProcedures: (string | Procedure<any>)[]): this {
+    if (!nameOrProcedures.length) {
+      throw new Error("No procedures to register.");
+    } else if (typeof nameOrProcedures[0] === "string" && nameOrProcedures.length === 2) {
+      const [name, value] = nameOrProcedures as [string, any];
+      this.#procedures.set(name, { name, value });
+    } else {
+      for (const procedure of nameOrProcedures as Procedure<any>[]) {
+        this.#procedures.set(procedure.name, procedure);
+      }
+    }
+
+    return this;
+  }
+
+  get<Value, T = Value extends (...args: infer Params) => any ? Params : never>(name: string, ...args: T[]): Value {
+    const procedure = this.#procedures.get(name);
+    if (!procedure) {
+      throw new Error(`Procedure "${name}" is not registered.`);
+    }
+
+    if (typeof procedure.value === "function") {
+      return procedure.value(...args);
+    }
+
+    return procedure.value;
   }
 }

@@ -94,4 +94,27 @@ Deno.test("node", async (t) => {
 
     assert(node.ops !== node2.ops);
   });
+
+  await t.step("should register and get a bool procedure on the api", () => {
+    node.api.register("test-bool", true);
+    assertEquals(node.api.get("test-bool"), true);
+  });
+
+  await t.step("should register and get a function procedure on the api", () => {
+    node.api.register("test-fn", () => true);
+    assertEquals(node.api.get("test-fn"), true);
+  });
+
+  await t.step("should register multiple procedures on the api", () => {
+    node.api.register({
+      name: "test-fn2",
+      value: () => true,
+    }, {
+      name: "test-fn3",
+      value: () => false,
+    });
+
+    assertEquals(node.api.get("test-fn2"), true);
+    assertEquals(node.api.get("test-fn3"), false);
+  });
 });
