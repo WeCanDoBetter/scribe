@@ -3,10 +3,11 @@
     "./lib",
     "./tests",
     "./scripts",
+    "./examples",
     "./mod.ts",
     "./type-guards.ts",
     "./types.ts",
-    "./util.ts"
+    "./util.ts",
   ],
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno",
