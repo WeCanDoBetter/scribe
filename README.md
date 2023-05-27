@@ -1,14 +1,16 @@
 # **📜 Scribe: Context-Aware Workflow Orchestration**
 
-![GitHub release](https://img.shields.io/github/v/release/WeCanDoBetter/scribe?include_prereleases)
-![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/WeCanDoBetter/scribe)
-[![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
-[![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
-[![Deno](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml)
-[![Node.js](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml)
-[![Browser](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml)
-![GitHub issues](https://img.shields.io/github/issues/WeCanDoBetter/scribe)
-![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
+<p align="center">
+  ![GitHub release](https://img.shields.io/github/v/release/WeCanDoBetter/scribe?include_prereleases)
+  ![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/WeCanDoBetter/scribe)
+  [![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
+  [![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
+  [![Deno](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml)
+  [![Node.js](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml)
+  [![Browser](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml)
+  ![GitHub issues](https://img.shields.io/github/issues/WeCanDoBetter/scribe)
+  ![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
+</p>
 
 Scribe is an innovative context-aware workflow orchestrator designed to manage
 and execute complex computational workflows. With the ability to share and
@@ -42,8 +44,8 @@ management with Scribe! 🥳
   task for advanced operations.
 - **🛠️ Extensibility**: Add your workflows to core pipelines, customizing
   Scribe's behavior to meet your needs.
-- **🔒 Built with TypeScript**: Providing better type safety, autocompletion,
-  and an improved development experience.
+- **🔒 Built with TypeScript**: Type safety, autocompletion, and an improved
+  development experience.
 - **💪 No native dependencies**: Making it easy to integrate into your project
   and simplifying deployment.
 
@@ -78,9 +80,9 @@ access and management.
 Golem will provide a host of ready-to-use workflows for AI development, focusing
 on conversational AIs.
 
-### 🪛 SynthFlow Editor
+### 🪛 SynthFlow Actual
 
-A stand-alone web app which will be able to connect to SynthFlow APIs and run
+A stand-alone web app which will be able to connect to Scribe/SynthFlow APIs and run
 Scribe/SynthFlow instances directly in the browser using Web Workers.
 
 ## 🤝 Contributing
