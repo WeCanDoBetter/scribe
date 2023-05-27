@@ -1,11 +1,14 @@
 # **📜 Scribe: Context-Aware Workflow Orchestration**
 
-![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
+![GitHub release](https://img.shields.io/github/v/release/WeCanDoBetter/scribe?include_prereleases)
+![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/WeCanDoBetter/scribe)
+[![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
 [![Coverage Status](https://coveralls.io/repos/github/WeCanDoBetter/scribe/badge.svg)](https://coveralls.io/github/WeCanDoBetter/scribe)
 [![Deno](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/deno.yml)
 [![Node.js](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/nodejs.yml)
-[![CodeFactor](https://www.codefactor.io/repository/github/wecandobetter/scribe/badge/main)](https://www.codefactor.io/repository/github/wecandobetter/scribe/overview/main)
+[![Browser](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml/badge.svg)](https://github.com/WeCanDoBetter/scribe/actions/workflows/browser.yml)
 ![GitHub issues](https://img.shields.io/github/issues/WeCanDoBetter/scribe)
+![https://img.shields.io/badge/license-GPLv3-blue.svg](https://img.shields.io/badge/license-GPLv3-blue.svg)
 
 Scribe is an innovative context-aware workflow orchestrator designed to manage
 and execute complex computational workflows. With the ability to share and

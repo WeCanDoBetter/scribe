@@ -3,3 +3,6 @@
 
 # dnt npm directory
 /npm
+
+# esbuild browser build
+/browser
