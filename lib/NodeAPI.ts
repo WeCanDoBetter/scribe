@@ -70,14 +70,10 @@ export default class NodeAPI<Ctx, Meta extends Metadata> {
     return this;
   }
 
-  get<Value, T = Value extends (...args: infer Params) => any ? Params : never>(name: string, ...args: T[]): Value {
+  get<Value>(name: string): Value {
     const procedure = this.#procedures.get(name);
     if (!procedure) {
       throw new Error(`Procedure "${name}" is not registered.`);
-    }
-
-    if (typeof procedure.value === "function") {
-      return procedure.value(...args);
     }
 
     return procedure.value;

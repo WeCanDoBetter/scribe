@@ -101,17 +101,17 @@ Deno.test("node", async (t) => {
   });
 
   await t.step("should register and get a function procedure on the api", () => {
-    node.api.register("test-fn", () => true);
-    assertEquals(node.api.get("test-fn"), true);
+    node.api.register("test-procedure", true);
+    assertEquals(node.api.get("test-procedure"), true);
   });
 
   await t.step("should register multiple procedures on the api", () => {
     node.api.register({
-      name: "test-fn2",
-      value: () => true,
+      name: "test-procedure2",
+      value: true,
     }, {
-      name: "test-fn3",
-      value: () => false,
+      name: "test-procedure3",
+      value: false,
     });
 
     assertEquals(node.api.get("test-fn2"), true);
