@@ -1,4 +1,10 @@
 {
+  "imports": {
+    "testing/": "https://deno.land/std@0.177.0/testing/",
+    "fs": "https://deno.land/std@0.182.0/fs/mod.ts",
+    "esbuild": "https://deno.land/x/esbuild@v0.17.19/mod.js",
+    "dnt": "https://deno.land/x/dnt@0.36.0/mod.ts"
+  },
   "lint": {
     "rules": {
       "exclude": ["no-explicit-any"]
@@ -20,9 +26,7 @@
     "singleQuote": false,
     "proseWrap": "preserve",
     "exclude": [
-      "docs/",
-      "deno.json",
-      "deno.lock"
+      "docs/"
     ]
   }
 }

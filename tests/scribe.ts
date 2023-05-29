@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assertEquals } from "https://deno.land/std@0.177.0/testing/asserts.ts";
+import { assertEquals } from "testing/asserts.ts";
 import Scribe from "../lib/Scribe.ts";
 import Node from "../lib/Node.ts";
 
