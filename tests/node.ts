@@ -114,7 +114,7 @@ Deno.test("node", async (t) => {
       value: false,
     });
 
-    assertEquals(node.api.get("test-fn2"), true);
-    assertEquals(node.api.get("test-fn3"), false);
+    assertEquals(node.api.get("test-procedure2"), true);
+    assertEquals(node.api.get("test-procedure3"), false);
   });
 });
