@@ -49,39 +49,27 @@ management with Scribe! 🥳
 
 [Documentation](https://scribe.wcdb.life) - [Project website](https://www.wcdb.life/scribe)
 
-## 🚀 Getting Started
+<!-- ## 🚀 Getting Started
 
 To start using Scribe in your projects, follow the simple steps outlined in our
 [Getting Started Guide](https://scribe.wcdb.life/getting-started/introduction). It will walk you through the installation
 process, showcase basic usage examples, and provide helpful tips to maximize the
-potential of Scribe.
+potential of Scribe. -->
 
 ## 💡 Learn More
 
 Explore the extensive documentation and code examples in our
-[documentation](https://scribe.wcdb.life) to dive deeper into the capabilities of Scribe, or use
-our fully interactive book Mastering Scribe*. Gain insights
+[documentation](https://scribe.wcdb.life) to dive deeper into the capabilities of Scribe. Gain insights
 into advanced features, best practices, and use cases that can transform your
 applications.
 
-<small>* Coming soon</small>
-
 ## ⚡ Coming Soon
 
-### 🌊 SynthFlow
+### 🪛 Echo
 
-SynthFlow will provide a set of plugins for Scribe which enable remote API
-access and management.
+Echo has been designed with the specific needs of advanced AI systems in mind. Its efficient, concurrent job processing capabilities make it well-suited to manage complex AI tasks, such as training machine learning models, running simulations, or processing large volumes of data in real-time.
 
-### 🙋‍♂️ Golem
-
-Golem will provide a host of ready-to-use workflows for AI development, focusing
-on conversational AIs.
-
-### 🪛 SynthFlow Actual
-
-A stand-alone web app which will be able to connect to Scribe/SynthFlow APIs and run
-Scribe/SynthFlow instances directly in the browser using Web Workers.
+[Repository](https://github.com/MichielvdVelde/echo)
 
 ## 🤝 Contributing
 
