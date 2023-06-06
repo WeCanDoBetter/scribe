@@ -63,13 +63,13 @@ Explore the extensive documentation and code examples in our
 into advanced features, best practices, and use cases that can transform your
 applications.
 
-## ⚡ Coming Soon
+<!-- ## ⚡ Coming Soon
 
 ### 🪛 Echo
 
 Echo has been designed with the specific needs of advanced AI systems in mind. Its efficient, concurrent job processing capabilities make it well-suited to manage complex AI tasks, such as training machine learning models, running simulations, or processing large volumes of data in real-time.
 
-[Repository](https://github.com/MichielvdVelde/echo)
+[Repository](https://github.com/MichielvdVelde/echo) -->
 
 ## 🤝 Contributing
 
